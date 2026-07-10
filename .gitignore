@@ -10,6 +10,7 @@ builds/
 items.jsonl
 .current-items.json
 .price-cache.json
+.trade-stats.json
 
 # Build output & deps
 node_modules/
