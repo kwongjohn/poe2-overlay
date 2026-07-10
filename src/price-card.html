@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: transparent; overflow: hidden;
+    font: 13px system-ui, sans-serif; color: #dbe4ee; user-select: none; }
+  .card { margin: 6px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(16, 20, 28, .92); border: 1px solid rgba(94,234,212,.3); }
+  .name { font-weight: 600; margin-bottom: 2px; }
+  .Normal { color: #c8c8c8; } .Magic { color: #8888ff; } .Rare { color: #ffff77; }
+  .Unique { color: #af6025; } .Currency { color: #aa9e82; }
+  .base { color: #8b98a9; font-size: 11px; }
+  .price { font-size: 16px; color: #5eead4; margin: 6px 0 2px; }
+  .div { color: #c9b37e; font-size: 12px; }
+  .none { color: #8b98a9; font-style: italic; margin: 6px 0 2px; }
+  .src { color: #5b6676; font-size: 10px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="name" id="name"></div>
+  <div class="base" id="base"></div>
+  <div id="priceline"></div>
+  <div class="src" id="src"></div>
+</div>
+<script>
+  const $ = id => document.getElementById(id);
+  window.overlay.onPrice(d => {
+    $('name').textContent = d.item.name || d.item.baseType || '?';
+    $('name').className = 'name ' + (d.item.rarity || '');
+    $('base').textContent = d.item.baseType && d.item.name !== d.item.baseType ? d.item.baseType : '';
+    if (d.price.found) {
+      const ex = d.price.price >= 100 ? Math.round(d.price.price) : d.price.price.toFixed(1);
+      let line = `<div class="price">${ex} ex`;
+      if (d.price.divine >= 0.05) line += ` <span class="div">≈ ${d.price.divine.toFixed(2)} div</span>`;
+      line += (d.item.stackSize && d.item.stackSize.cur > 1)
+        ? ` <span class="div">× ${d.item.stackSize.cur} = ${(d.price.price * d.item.stackSize.cur).toFixed(0)} ex</span>` : '';
+      $('priceline').innerHTML = line + '</div>';
+      $('src').textContent = `${d.price.source} · ${d.price.league}`;
+    } else {
+      $('priceline').innerHTML = `<div class="none">${d.price.note || 'no listed price'}</div>`;
+      $('src').textContent = d.price.league || '';
+    }
+  });
+</script>
+</body>
+</html>

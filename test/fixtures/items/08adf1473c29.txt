@@ -1,0 +1,10 @@
+Item Class: Stackable Currency
+Rarity: Currency
+Greater Orb of Transmutation
+--------
+Stack Size: 1/40
+Minimum Modifier Level: 44
+--------
+Upgrades a Normal item to a Magic item with 1 modifier
+--------
+Right click this item then left click a normal item to apply it.

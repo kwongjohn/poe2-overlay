@@ -1,0 +1,12 @@
+Item Class: Belts
+Rarity: Normal
+Utility Belt
+--------
+Requires: Level 55
+--------
+Item Level: 78
+--------
+{ Implicit Modifier }
+20% of Flask Recovery applied Instantly
+{ Implicit Modifier — Charm }
+Has 2(1-3) Charm Slots

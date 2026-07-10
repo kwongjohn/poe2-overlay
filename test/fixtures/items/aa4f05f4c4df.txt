@@ -1,0 +1,10 @@
+Item Class: Rings
+Rarity: Normal
+Unset Ring
+--------
+Requires: Level 44
+--------
+Item Level: 78
+--------
+{ Implicit Modifier }
+Grants 1 additional Skill Slot

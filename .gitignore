@@ -1,0 +1,18 @@
+# Credentials & personal state — never commit
+*.local.*
+CREDENTIALS.local.md
+settings.json
+.oauth-token.json
+sessions.jsonl
+builds/
+.compare-target.json
+.export-manifest.json
+items.jsonl
+.current-items.json
+.price-cache.json
+
+# Build output & deps
+node_modules/
+dist/
+out/
+*.tsbuildinfo

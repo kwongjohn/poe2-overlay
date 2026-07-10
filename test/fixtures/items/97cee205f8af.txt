@@ -1,0 +1,10 @@
+Item Class: Waystones
+Rarity: Rare
+Chaos Core
+Waystone (Tier 15)
+--------
+Waystone Tier: 15
+--------
+Item Level: 82
+--------
+Monsters deal 25% extra Damage as Chaos

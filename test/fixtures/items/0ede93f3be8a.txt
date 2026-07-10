@@ -1,0 +1,9 @@
+Item Class: Stackable Currency
+Rarity: Currency
+Lesser Jeweller's Orb
+--------
+Stack Size: 1/20
+--------
+Sets a Skill Gem to have 3 Support Gem Sockets
+--------
+Right click this item then left click a Skill Gem to apply it. Can only apply to Skill Gems with fewer than 3 Support Gem Sockets.

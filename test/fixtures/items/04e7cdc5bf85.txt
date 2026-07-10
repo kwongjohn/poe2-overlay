@@ -1,0 +1,11 @@
+Item Class: Body Armours
+Rarity: Magic
+Vile Robe
+--------
+Energy Shield: 171
+--------
+Requires: 121 Intelligence
+--------
+Item Level: 79
+--------
+Unidentified

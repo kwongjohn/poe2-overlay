@@ -1,0 +1,27 @@
+Item Class: Waystones
+Rarity: Rare
+Agony Path
+Waystone (Tier 14)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +39% (augmented)
+Pack Size: +15% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +85% (augmented)
+--------
+Item Level: 80
+--------
+{ Prefix Modifier "Venomous" (Tier: 1) }
+Monsters have 31(27-33)% chance to Poison on Hit
+{ Prefix Modifier "Frostbitten" (Tier: 1) }
+Monsters deal 19(15-19)% of Damage as Extra Cold
+{ Prefix Modifier "Puncturing" (Tier: 1) }
+Monsters have 17(15-20)% chance to inflict Bleeding on Hit
+{ Suffix Modifier "of Slowing" (Tier: 1) }
+Players are periodically Cursed with Temporal Chains — Unscalable Value
+{ Suffix Modifier "of Hexwarding" (Tier: 1) }
+50(50-40)% less effect of Curses on Monsters
+{ Suffix Modifier "of Smothering" (Tier: 1) }
+Players have 38(40-36)% less Recovery Rate of Life and Energy Shield
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

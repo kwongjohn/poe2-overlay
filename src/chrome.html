@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 34px; overflow: hidden; background: #10141c;
+    font: 12px system-ui, sans-serif; color: #dbe4ee; user-select: none; }
+  #bar { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px;
+    border-bottom: 1px solid rgba(94,234,212,.25); -webkit-app-region: drag; }
+  .t { color: #5eead4; font-weight: 600; white-space: nowrap; }
+  .item { flex: 1; color: #c9b37e; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; font-size: 11px; }
+  label { color: #8b98a9; font-size: 11px; }
+  select, input[type=range], button { -webkit-app-region: no-drag; }
+  select { background: #1a2130; color: #dbe4ee; border: 1px solid #2a3346;
+    border-radius: 4px; font-size: 11px; }
+  input[type=range] { width: 70px; accent-color: #5eead4; }
+  button { background: none; border: none; color: #8b98a9; font-size: 14px;
+    cursor: pointer; padding: 2px 6px; }
+  button:hover { color: #f87171; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <span class="t">PoE2 Overlay</span>
+  <span class="item" id="item"></span>
+  <label>Opacity <input type="range" id="opacity" min="50" max="100" value="96"></label>
+  <label>Size <select id="size"><option>S</option><option selected>M</option><option>L</option></select></label>
+  <label>Pos <select id="corner">
+    <option value="bottom-right" selected>↘</option><option value="bottom-left">↙</option>
+    <option value="top-right">↗</option><option value="top-left">↖</option>
+    <option value="custom">drag</option>
+  </select></label>
+  <label>Key <select id="hotkey">
+    <option selected>Ctrl+Alt+O</option><option>Ctrl+Alt+Space</option>
+    <option>F8</option><option>F9</option>
+  </select></label>
+  <button id="hide" title="Hide (or press the hotkey)">✕</button>
+</div>
+<script>
+  const $ = id => document.getElementById(id);
+  $('opacity').oninput = e => window.overlay.set({ opacity: e.target.value / 100 });
+  $('size').onchange = e => window.overlay.set({ size: e.target.value });
+  $('corner').onchange = e => window.overlay.set({ corner: e.target.value });
+  $('hotkey').onchange = e => window.overlay.set({ hotkey: e.target.value });
+  $('hide').onclick = () => window.overlay.hide();
+  window.overlay.onStatus(d => {
+    if (d.item) $('item').textContent = d.item;
+    $('opacity').value = Math.round(d.cfg.opacity * 100);
+    $('size').value = d.cfg.size;
+    $('corner').value = d.cfg.corner;
+    $('hotkey').value = d.cfg.hotkey;
+  });
+</script>
+</body>
+</html>
