@@ -1,0 +1,25 @@
+Item Class: Gloves
+Rarity: Unique
+Nightscale
+Pauascale Gloves
+--------
+Energy Shield: 54 (augmented)
+--------
+Requires: Level 45, 56 Int
+--------
+Item Level: 80
+--------
+{ Unique Modifier — Energy Shield }
+60(60-100)% increased Energy Shield
+{ Unique Modifier — Attribute }
++14(10-20) to Intelligence
+{ Unique Modifier — Elemental, Cold, Resistance }
++23(20-30)% to Cold Resistance
+{ Unique Modifier — Mana }
+Cannot Regenerate Mana if you haven't dealt a Critical Hit Recently — Unscalable Value
+{ Unique Modifier — Mana, Critical }
+150% increased Mana Regeneration Rate if you've dealt a Critical Hit Recently
+{ Unique Modifier — Critical }
+41(30-50)% increased Critical Hit Chance
+--------
+Diamora sings not for hunger, but for longing.

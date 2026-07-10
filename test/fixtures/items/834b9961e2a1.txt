@@ -1,0 +1,26 @@
+Item Class: Waystones
+Rarity: Rare
+Pain Resolve
+Waystone (Tier 14)
+--------
+Revives Available: 1 (augmented)
+Item Rarity: +25% (augmented)
+Pack Size: +16% (augmented)
+Monster Rarity: +18% (augmented)
+Waystone Drop Chance: +75% (augmented)
+--------
+Item Level: 80
+--------
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 234(200-240)% increased Critical Hit Chance
+Monsters have +24(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Frostbitten" (Tier: 1) }
+Monsters deal 18(15-19)% of Damage as Extra Cold
+{ Suffix Modifier "of Overpowering" (Tier: 1) }
+Monster have 109(100-119)% increased Elemental Ailment Application
+{ Suffix Modifier "Shocking" (Tier: 1) }
+Area has patches of Shocked Ground — Unscalable Value
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

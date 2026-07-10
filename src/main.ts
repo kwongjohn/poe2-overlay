@@ -234,6 +234,10 @@ function captureClipboard() {
   setTimeout(async () => {
     const text = clipboard.readText();
     if (!looksLikeItem(text)) return;
+    // Consume the item text so Ctrl+C on empty ground doesn't re-trigger the
+    // card with the previous item (the game rewrites the clipboard on every
+    // real item copy, so repeat checks of the same item still work).
+    clipboard.writeText('');
     const parsed = parseItem(text);
     lastItem = parsed
       ? [parsed.name, parsed.baseType].filter(Boolean).join(' · ')

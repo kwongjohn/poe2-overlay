@@ -1,0 +1,14 @@
+Item Class: Waystones
+Rarity: Magic
+Waystone (Tier 14) of Enduring
+--------
+Revives Available: 5
+Monster Rarity: +18% (augmented)
+Waystone Drop Chance: +15% (augmented)
+--------
+Item Level: 80
+--------
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

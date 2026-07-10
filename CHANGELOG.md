@@ -23,6 +23,9 @@ yet; sections are dated (phase in parentheses).
   (6 tests total).
 
 ### Fixed
+- Ctrl+C on empty ground re-showed the previous item's card (stale clipboard) —
+  the item text is now consumed after ingest; the game rewrites it on every
+  real copy, so repeat checks still work.
 - Unknown/synthetic base types 400'd the trade search — retries without `type`.
 - Cheapest listings priced in small currencies (aug/transmute) read as "unknown
   currency" — conversion now uses the scout list's full GGG ApiId map (808 ids).
