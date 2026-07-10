@@ -12,11 +12,13 @@ Electron overlay shell, the market/pricing module, and the clipboard/OCR capture
 **State (2026-07-10): Phases 0–3a done and John-verified in-game.** Working now:
 overlay shell attached to the game (hotkey panel hosting the full tracker UI, settings
 bar, tray), Ctrl+C capture → parser → corpus/loot-log/registry, and the price card
-(poe2scout 24h avg, league auto-detect, cached + dual-base failover). Rares are the
-gap: they need the trade2 API's stat-filtered search — **that is the next step**, then
-the pick advisor + map-mod warnings on top of it. Also pending: GitHub repo creation
-(Phase 0 leftover), GGG OAuth reply, EE2 data vendoring (MIT, needed for trade stat
-filters). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
+(poe2scout 24h avg, league auto-detect, cached + dual-base failover). Rare/magic pricing
+works via the trade2 API (stat-filtered search, governor, POESESSID in settings).
+Public repo: github.com/kwongjohn/poe2-overlay — commit + update CHANGELOG.md every
+session. **Next: the pick advisor** (score captured waystones/tablets against the
+build: danger mods per archetype + market value; decided 2026-07-10, rune/OCR module
+deferred — RuneshapePriceChecker covers runes this league). Still pending: GGG OAuth
+reply (follow up ~Jul 25). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
 `CHANGELOG.md` (update it every session) · roadmap/boundary: `PLAN.md` (§4b) ·
 external deps: `EXTERNAL-REQUIREMENTS.md` · secrets: `CREDENTIALS.local.md`
 (gitignored). Known constraints: don't run the old tracker's server simultaneously
