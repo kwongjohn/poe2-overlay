@@ -1040,6 +1040,144 @@ function findScoutItem(s, name, base) {
     || null;
 }
 
+// Official trade2 API — the only source that can price a *specific rare* from its
+// mods. Etiquette per EXTERNAL-REQUIREMENTS §2: real User-Agent, requests
+// serialized + spaced, Retry-After honored, one search per user keypress (the
+// overlay only calls this from a Ctrl+C), POESESSID sent only to pathofexile.com.
+const TRADE = 'https://www.pathofexile.com/api/trade2';
+const TRADE_STATS_FILE = path.join(ROOT, '.trade-stats.json');
+let tradeStats = null;
+let tradeChain = Promise.resolve();
+let tradeLastAt = 0;
+let tradeCooldownUntil = 0;
+
+function tradeHeaders(settings) {
+  const h = {
+    'User-Agent': SCOUT_HEADERS['User-Agent'],
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+  if (settings.poesessid) h.Cookie = `POESESSID=${settings.poesessid}`;
+  return h;
+}
+
+async function tradeFetch(u, opts = {}) {
+  const settings = loadSettings();
+  // Serialize and space all trade calls (simple governor: >=1.5s apart, plus any
+  // server-mandated cooldown), so bursts can never exceed the advertised budget.
+  const myTurn = tradeChain.then(async () => {
+    const wait = Math.max(tradeLastAt + 1500 - Date.now(), tradeCooldownUntil - Date.now(), 0);
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    tradeLastAt = Date.now();
+  });
+  tradeChain = myTurn.catch(() => {});
+  await myTurn;
+  const r = await fetch(u, { ...opts, headers: tradeHeaders(settings) });
+  if (r.status === 429) {
+    const ra = Number(r.headers.get('retry-after') || 15);
+    tradeCooldownUntil = Date.now() + ra * 1000;
+    throw new Error(`rate-limited by trade API (retry in ${ra}s)`);
+  }
+  if (!r.ok) throw new Error(`trade API ${r.status}`);
+  return r.json();
+}
+
+const normTemplate = (t) => t.replace(/[+-]?[\d.]+/g, '#').toLowerCase().trim();
+
+// GGG's own stat catalogue (first-party alternative to vendoring EE2 data):
+// mod text with numbers masked → trade stat id. Cached 24h on disk.
+async function ensureTradeStats() {
+  if (tradeStats) return tradeStats;
+  try {
+    const d = JSON.parse(fs.readFileSync(TRADE_STATS_FILE, 'utf8'));
+    if (Date.now() - d.fetchedAt < 24 * 3600 * 1000) { tradeStats = d; return d; }
+  } catch { /* no cache */ }
+  const data = await tradeFetch(`${TRADE}/data/stats`);
+  const map = [];
+  for (const grp of data.result || []) {
+    for (const e of grp.entries || []) {
+      if (e.id && e.text) map.push({ id: e.id, type: e.type, template: normTemplate(e.text) });
+    }
+  }
+  tradeStats = { fetchedAt: Date.now(), map };
+  await fsp.writeFile(TRADE_STATS_FILE, JSON.stringify(tradeStats)).catch(() => {});
+  console.log(`[price] trade stat catalogue cached: ${map.length} entries`);
+  return tradeStats;
+}
+
+function tradeStatFilters(stats, modLines) {
+  const filters = [];
+  const unmatched = [];
+  for (const line of modLines) {
+    const tpl = normTemplate(line);
+    const hit = stats.map.find((s) => s.type === 'explicit' && s.template === tpl);
+    if (!hit) { unmatched.push(line); continue; }
+    const num = /[\d.]+/.exec(line);
+    // 10% headroom below the item's roll so near-equivalents count as comparables.
+    filters.push(num
+      ? { id: hit.id, value: { min: Math.floor(Number(num[0]) * 0.9) } }
+      : { id: hit.id });
+  }
+  return { filters, unmatched };
+}
+
+// exalts per unit for a trade-listing currency. The scout Items list carries
+// GGG's own currency ApiIds (aug, transmute, chaos, divine, …) with ex prices.
+function currencyToEx(s, apiId) {
+  const t = (apiId || '').toLowerCase();
+  if (t === 'exalted') return 1;
+  const hit = s.items.find((i) => (i.ApiId || '').toLowerCase() === t);
+  return hit && hit.CurrentPrice > 0 ? hit.CurrentPrice : null;
+}
+
+async function tradePrice(parsed, scoutState) {
+  const stats = await ensureTradeStats();
+  const { filters, unmatched } = tradeStatFilters(stats, parsed.explicits || []);
+  if (!filters.length) return { found: false, note: 'no mods matched the trade stat catalogue' };
+  const query = {
+    query: {
+      status: { option: 'online' },
+      ...(parsed.baseType ? { type: parsed.baseType } : {}),
+      stats: [{ type: 'and', filters }],
+    },
+    sort: { price: 'asc' },
+  };
+  const league = encodeURIComponent(scoutState.league || 'Standard');
+  let search;
+  try {
+    search = await tradeFetch(`${TRADE}/search/poe2/${league}`, {
+      method: 'POST', body: JSON.stringify(query),
+    });
+  } catch (e) {
+    // Parser base names can drift from GGG's catalogue ("Unknown item base type",
+    // a 400) — mods alone still give a usable comparable search.
+    if (!query.query.type || !/400/.test(String(e.message))) throw e;
+    delete query.query.type;
+    search = await tradeFetch(`${TRADE}/search/poe2/${league}`, {
+      method: 'POST', body: JSON.stringify(query),
+    });
+  }
+  if (!search.result || !search.result.length) {
+    return { found: false, note: 'no online listings match these mods', total: search.total || 0, unmatched };
+  }
+  const fetched = await tradeFetch(`${TRADE}/fetch/${search.result.slice(0, 10).join(',')}?query=${search.id}`);
+  const exPrices = (fetched.result || [])
+    .map((x) => x && x.listing && x.listing.price)
+    .filter((p) => p && p.amount > 0)
+    .map((p) => { const rate = currencyToEx(scoutState, p.currency); return rate ? p.amount * rate : null; })
+    .filter((v) => v != null)
+    .sort((a, b) => a - b);
+  if (!exPrices.length) return { found: false, note: 'listings found but in unknown currencies', total: search.total };
+  return {
+    found: true, source: 'trade (online, cheapest first)', league: scoutState.league,
+    currency: 'ex', total: search.total,
+    price: exPrices[0], // "from" price
+    median: exPrices[Math.floor(exPrices.length / 2)],
+    divine: scoutState.divinePrice ? exPrices[0] / scoutState.divinePrice : null,
+    sampled: exPrices.length, unmatched,
+  };
+}
+
 // Static hosting of the built app (app/dist) so the Electron overlay loads the UI
 // from this server (same origin as /api) with no Vite dev process.
 const APP_DIST = path.join(ROOT, 'app', 'dist');
@@ -1082,7 +1220,11 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (p === '/api/settings') {
-      if (req.method === 'GET') return send(res, 200, loadSettings());
+      if (req.method === 'GET') {
+        // Redact the session credential; callers only need to know it's set.
+        const s = loadSettings();
+        return send(res, 200, { ...s, poesessid: s.poesessid ? '(set)' : '' });
+      }
       if (req.method === 'PUT') {
         const body = JSON.parse(await readBody(req));
         const settings = { ...loadSettings() };
@@ -1095,12 +1237,16 @@ const server = http.createServer(async (req, res) => {
         }
         if (typeof body.oauthClientId === 'string') settings.oauthClientId = body.oauthClientId.trim();
         if (typeof body.oauthContact === 'string') settings.oauthContact = body.oauthContact.trim();
+        // Session cookie for trade searches; '(set)' is the GET redaction echoing back — ignore it.
+        if (typeof body.poesessid === 'string' && body.poesessid !== '(set)') {
+          settings.poesessid = body.poesessid.trim();
+        }
         // Overlay shell settings (opacity/size/position/hotkey) — shallow-merged blob.
         if (body.overlay && typeof body.overlay === 'object' && !Array.isArray(body.overlay)) {
           settings.overlay = { ...(settings.overlay || {}), ...body.overlay };
         }
         await saveSettings(settings);
-        return send(res, 200, settings);
+        return send(res, 200, { ...settings, poesessid: settings.poesessid ? '(set)' : '' });
       }
     }
 
@@ -1117,28 +1263,44 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, loadCurrentItems());
     }
 
-    // Price check: match a captured item against the poe2scout list.
-    // Uniques/currency/fragments price by name; rares have no list price (that
-    // needs the trade API's stat-filtered search — a later phase).
-    if (req.method === 'GET' && p === '/api/price') {
-      const name = url.searchParams.get('name') || '';
-      const base = url.searchParams.get('base') || '';
-      const rarity = url.searchParams.get('rarity') || '';
+    // Price check. GET (name/base/rarity params) = poe2scout list lookup only.
+    // POST (body = parsed item) = scout lookup, then a trade2 stat-filtered
+    // search for Rare/Magic gear the list can't price.
+    if (p === '/api/price' && (req.method === 'GET' || req.method === 'POST')) {
+      let name = '', base = '', rarity = '', parsed = null;
+      if (req.method === 'GET') {
+        name = url.searchParams.get('name') || '';
+        base = url.searchParams.get('base') || '';
+        rarity = url.searchParams.get('rarity') || '';
+      } else {
+        parsed = JSON.parse(await readBody(req)).parsed || null;
+        if (!parsed) return send(res, 400, { error: 'parsed item required' });
+        name = parsed.name; base = parsed.baseType; rarity = parsed.rarity;
+      }
       try {
         const s = await ensureScout();
         const hit = findScoutItem(s, name, base);
         // CurrentPrice of 0 means "no data", not "free" — treat as unpriced.
-        if (!hit || !(hit.CurrentPrice > 0)) {
+        if (hit && hit.CurrentPrice > 0) {
           return send(res, 200, {
-            found: false, league: s.league,
-            note: rarity === 'Rare' ? 'rare items need a trade search (coming)' : 'no listed price',
+            found: true, league: s.league,
+            source: `poe2scout 24h avg${s.stale ? ' (cached)' : ''}`,
+            name: hit.Text || hit.Name, price: hit.CurrentPrice, currency: 'ex',
+            divine: s.divinePrice ? hit.CurrentPrice / s.divinePrice : null,
           });
         }
+        const tradeable = parsed && ['Rare', 'Magic'].includes(rarity)
+          && (parsed.explicits || []).length > 0;
+        if (tradeable) {
+          try {
+            return send(res, 200, { ...(await tradePrice(parsed, s)), league: s.league });
+          } catch (e) {
+            return send(res, 200, { found: false, league: s.league, note: String((e && e.message) || e) });
+          }
+        }
         return send(res, 200, {
-          found: true, league: s.league,
-          source: `poe2scout 24h avg${s.stale ? ' (cached)' : ''}`,
-          name: hit.Text || hit.Name, price: hit.CurrentPrice, currency: 'ex',
-          divine: s.divinePrice ? hit.CurrentPrice / s.divinePrice : null,
+          found: false, league: s.league,
+          note: rarity === 'Rare' ? 'rare items price via trade search (POST)' : 'no listed price',
         });
       } catch (e) {
         return send(res, 502, { error: String((e && e.message) || e) });

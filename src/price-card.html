@@ -31,13 +31,15 @@
     $('name').className = 'name ' + (d.item.rarity || '');
     $('base').textContent = d.item.baseType && d.item.name !== d.item.baseType ? d.item.baseType : '';
     if (d.price.found) {
-      const ex = d.price.price >= 100 ? Math.round(d.price.price) : d.price.price.toFixed(1);
-      let line = `<div class="price">${ex} ex`;
+      const fmt = v => v >= 100 ? Math.round(v) : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+      let line = `<div class="price">${d.price.median ? 'from ' : ''}${fmt(d.price.price)} ex`;
       if (d.price.divine >= 0.05) line += ` <span class="div">≈ ${d.price.divine.toFixed(2)} div</span>`;
+      if (d.price.median) line += ` <span class="div">· median ${fmt(d.price.median)} ex · ${d.price.total} online</span>`;
       line += (d.item.stackSize && d.item.stackSize.cur > 1)
         ? ` <span class="div">× ${d.item.stackSize.cur} = ${(d.price.price * d.item.stackSize.cur).toFixed(0)} ex</span>` : '';
       $('priceline').innerHTML = line + '</div>';
-      $('src').textContent = `${d.price.source} · ${d.price.league}`;
+      const un = (d.price.unmatched || []).length;
+      $('src').textContent = `${d.price.source} · ${d.price.league}` + (un ? ` · ${un} mod(s) not in search` : '');
     } else {
       $('priceline').innerHTML = `<div class="none">${d.price.note || 'no listed price'}</div>`;
       $('src').textContent = d.price.league || '';

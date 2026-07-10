@@ -249,12 +249,13 @@ function captureClipboard() {
     sendStatus();
     if (parsed) {
       try {
-        const q = new URLSearchParams({
-          name: parsed.name, base: parsed.baseType, rarity: parsed.rarity,
-        });
-        const price = await (await fetch(`${API}/api/price?${q}`)).json();
+        const price = await (await fetch(`${API}/api/price`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ parsed }),
+        })).json();
         showPriceCard(parsed, price);
-        if (price.found) log(`price: ${price.price} ex (${price.name})`);
+        if (price.found) log(`price: ${price.price} ex (${price.name || parsed.name}) via ${price.source}`);
+        else log(`unpriced: ${price.note || 'unknown'}`);
       } catch (e) { log(`price lookup failed: ${e}`); }
     }
   }, 150);

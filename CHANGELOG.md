@@ -4,6 +4,30 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-10 (later) — Phase 3b (rare pricing via trade2 API) + repo
+
+### Added
+- **Public GitHub repo**: [kwongjohn/poe2-overlay](https://github.com/kwongjohn/poe2-overlay),
+  initial commit of phases 0–3a; root MIT LICENSE (vendored `app/` keeps its
+  upstream MIT); README requirements & compliance section.
+- **trade2 API client** (rare/magic pricing): GGG's own stat catalogue
+  (`/api/trade2/data/stats`, 8,220 entries, cached 24 h — first-party, so no EE2
+  data vendoring needed) → parsed mod lines matched by number-masked template →
+  stat-filtered search (min = 90% of the item's roll) → fetch cheapest 10 →
+  prices normalized to exalts via scout currency ApiIds → "from / median /
+  N online" on the price card. Request governor: serialized, ≥1.5 s spacing,
+  `Retry-After` honored; POESESSID from `settings.poesessid` (redacted in API
+  responses), sent only to pathofexile.com.
+- Parser tests: real-capture fixture (unidentified magic, single-line PoE2
+  `Requires:`) + a corpus sweep that auto-covers every future captured item
+  (6 tests total).
+
+### Fixed
+- Unknown/synthetic base types 400'd the trade search — retries without `type`.
+- Cheapest listings priced in small currencies (aug/transmute) read as "unknown
+  currency" — conversion now uses the scout list's full GGG ApiId map (808 ids).
+- `PUT /api/settings` echoed the raw POESESSID back — redacted.
+
 ## 2026-07-10 — Phase 2 & 3a (item capture pipeline, price card)
 
 ### Added
