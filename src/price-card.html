@@ -15,6 +15,13 @@
   .div { color: #c9b37e; font-size: 12px; }
   .none { color: #8b98a9; font-style: italic; margin: 6px 0 2px; }
   .src { color: #5b6676; font-size: 10px; margin-top: 4px; }
+  #advice { margin-top: 6px; border-top: 1px solid rgba(94,234,212,.15); padding-top: 6px; }
+  .verdict { font-weight: 700; font-size: 13px; }
+  .GOOD { color: #5eead4; } .CAUTION { color: #f5d90a; }
+  .RISKY { color: #fb923c; } .SKIP { color: #f87171; }
+  .find { font-size: 11px; margin: 2px 0; }
+  .brick { color: #f87171; } .danger { color: #fb923c; } .note { color: #8b98a9; }
+  .rewards { font-size: 11px; color: #c9b37e; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -22,6 +29,7 @@
   <div class="name" id="name"></div>
   <div class="base" id="base"></div>
   <div id="priceline"></div>
+  <div id="advice" style="display:none"></div>
   <div class="src" id="src"></div>
 </div>
 <script>
@@ -43,6 +51,20 @@
     } else {
       $('priceline').innerHTML = `<div class="none">${d.price.note || 'no listed price'}</div>`;
       $('src').textContent = d.price.league || '';
+    }
+    const a = d.price.advice;
+    if (a) {
+      const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+      let html = `<div class="verdict ${a.verdict}">${a.verdict}</div>`;
+      for (const f of a.findings.filter(x => x.sev !== 'note').concat(a.findings.filter(x => x.sev === 'note')).slice(0, 5)) {
+        html += `<div class="find ${f.sev}">• ${esc(f.why)}</div>`;
+      }
+      if (a.rewards.length) html += `<div class="rewards">${esc(a.rewards.join(' · '))}</div>`;
+      $('advice').innerHTML = html;
+      $('advice').style.display = 'block';
+      $('src').textContent += ` · build: ${a.tags.join('/')}`;
+    } else {
+      $('advice').style.display = 'none';
     }
   });
 </script>

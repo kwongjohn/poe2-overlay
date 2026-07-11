@@ -209,12 +209,16 @@ function makePriceWin() {
   priceWin.loadFile(path.join(ROOT, 'src', 'price-card.html'));
 }
 
-function showPriceCard(item: unknown, price: unknown) {
+function showPriceCard(item: unknown, price: { advice?: { findings: unknown[], rewards: unknown[] } }) {
   if (!priceWin) return;
   if (priceWin.webContents.isLoading()) {
     priceWin.webContents.once('did-finish-load', () => showPriceCard(item, price));
     return;
   }
+  // Taller card when pick advice is present (verdict + findings + rewards).
+  const a = price.advice;
+  const cardH = a ? Math.min(150 + 20 + Math.min(a.findings.length, 5) * 16 + (a.rewards.length ? 20 : 0), 280) : 130;
+  priceWin.setSize(a ? 340 : 300, cardH);
   priceWin.webContents.send('price', { item, price });
   // Near the cursor, clamped to the display the cursor is on.
   const cur = screen.getCursorScreenPoint();

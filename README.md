@@ -15,10 +15,13 @@ bar, tray), Ctrl+C capture → parser → corpus/loot-log/registry, and the pric
 (poe2scout 24h avg, league auto-detect, cached + dual-base failover). Rare/magic pricing
 works via the trade2 API (stat-filtered search, governor, POESESSID in settings).
 Public repo: github.com/kwongjohn/poe2-overlay — commit + update CHANGELOG.md every
-session. **Next: the pick advisor** (score captured waystones/tablets against the
-build: danger mods per archetype + market value; decided 2026-07-10, rune/OCR module
-deferred — RuneshapePriceChecker covers runes this league). Still pending: GGG OAuth
-reply (follow up ~Jul 25). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
+session. **Pick advisor done (2026-07-10 evening):** waystones/tablets score against the target
+build (auto-derived archetype tags, per-archetype mod rules, GOOD/CAUTION/RISKY/SKIP +
+rewards) — verified RISKY on a real T14 with curse-gutting + recovery-crippling mods.
+Rune/OCR module deferred (RuneshapePriceChecker covers runes this league). **Next
+candidates:** session HUD strip (level/zone/deaths/pace off existing endpoints),
+leveling hints widget, or Recommendations v2 ("cheapest upgrade" = compare diff ×
+trade prices). Still pending: GGG OAuth reply (follow up ~Jul 25). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
 `CHANGELOG.md` (update it every session) · roadmap/boundary: `PLAN.md` (§4b) ·
 external deps: `EXTERNAL-REQUIREMENTS.md` · secrets: `CREDENTIALS.local.md`
 (gitignored). Known constraints: don't run the old tracker's server simultaneously

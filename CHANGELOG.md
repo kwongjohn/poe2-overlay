@@ -4,6 +4,21 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-10 (evening) — Phase 4 (pick advisor + map-mod warnings)
+
+### Added
+- **Pick advisor**: Ctrl+C a waystone/tablet → the card scores it against the
+  *target build*, not just the market. Archetype tags auto-derived from the
+  build's gem ids + ascendancy (chaos/dot/curse/es for John's Lich; overridable
+  via `settings.advisor.tags`); rule table classifies each map mod as
+  brick/danger/note **per archetype** (e.g. curse-effect mods only escalate for
+  curse builds); verdict GOOD/CAUTION/RISKY/SKIP; reward line from the
+  waystone's rarity/pack/drop-chance properties. Verified against a real
+  captured T14 waystone: RISKY — curses gutted (Hexwarding) + recovery crippled
+  (Smothering) — exactly the two mods that matter for this build.
+- Card grows to fit advice (verdict + up to 5 findings, dangers first + rewards).
+- Map items skip the trade search (their market price isn't the useful signal).
+
 ## 2026-07-10 (later) — Phase 3b (rare pricing via trade2 API) + repo
 
 ### Added

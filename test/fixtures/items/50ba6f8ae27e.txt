@@ -1,0 +1,22 @@
+Item Class: Charms
+Rarity: Magic
+Sprouting Stone Charm of the Plentiful
+--------
+Lasts 3 Seconds
+Consumes 20 of 57 (augmented) Charges on use
+Currently has 0 Charges
+Cannot be Stunned
+--------
+Requires: Level 28
+--------
+Item Level: 66
+--------
+{ Implicit Modifier }
+Used when you become Stunned — Unscalable Value
+--------
+{ Prefix Modifier "Sprouting" (Tier: 5) — Charm, Life }
+Recover 112(96-130) Life when Used
+{ Suffix Modifier "of the Plentiful" (Tier: 4) }
+43(39-46)% increased Charges
+--------
+Used automatically when condition is met. Can only hold charges while in belt. Refill at Wells or by killing monsters.

@@ -1178,6 +1178,79 @@ async function tradePrice(parsed, scoutState) {
   };
 }
 
+// Pick advisor: score a captured waystone/tablet against the *target build*,
+// not just the market. Archetype tags are derived from the build's gem ids and
+// ascendancy (overridable via settings.advisor.tags); mods are matched by a
+// rule table where a rule can escalate for affected archetypes or be skipped
+// as irrelevant to them.
+const cleanMod = (l) => l
+  .replace(/\(\s*[\d.]+\s*-\s*[\d.]+\s*\)/g, '')  // roll ranges "38(40-36)%"
+  .replace(/\s*—.*$/, '')                          // advanced-copy suffixes
+  .replace(/\s+/g, ' ').trim().toLowerCase();
+
+async function buildAdvisorTags() {
+  const settings = loadSettings();
+  const manual = settings.advisor && settings.advisor.tags;
+  if (Array.isArray(manual) && manual.length) return manual;
+  try {
+    const t = await loadTargetBuild();
+    if (!t.exported) return ['generic'];
+    const s = JSON.stringify(t.d);
+    const tags = [];
+    if (/EssenceDrain|Contagion|DarkEffigy|RavenousSwarm|Withering|ChaosMastery|Envenom|ManaDrain/i.test(s)) tags.push('chaos', 'dot');
+    if (/TemporalChains|Despair|Blasphemy|Enfeeble/i.test(s)) tags.push('curse');
+    if (/Minion|Skeletal|RagingSpirits/i.test(s)) tags.push('minion');
+    tags.push(/witch|lich|sorc/i.test(t.d.ascendancy || '') ? 'es' : 'life');
+    return tags.length ? tags : ['generic'];
+  } catch { return ['generic']; }
+}
+
+// sev: brick = build-disabling (verdict SKIP) · danger · note.
+// tags: archetypes the rule escalates for; `else: 'skip'` = irrelevant otherwise.
+const ADVICE_RULES = [
+  { re: /monsters are hexproof|monsters cannot be cursed/, tags: ['curse'], sev: 'brick', why: 'your curses do nothing here', else: 'skip' },
+  { re: /less effect of curses on monsters/, tags: ['curse'], sev: 'danger', why: 'your curses lose most of their effect', else: 'skip' },
+  { re: /less recovery rate of life and energy shield/, sev: 'danger', why: 'recovery crippled — sustain carefully' },
+  { re: /chaos resistance/, tags: ['chaos'], sev: 'danger', why: 'monsters resist your chaos damage', else: 'skip' },
+  { re: /maximum player resistances/, sev: 'danger', why: 'max res lowered — elemental spikes' },
+  { re: /increased critical hit chance|critical damage/, sev: 'danger', why: 'crit spikes — one-shot risk' },
+  { re: /additional projectiles/, sev: 'danger', why: 'extra projectiles — more incoming hits' },
+  { re: /of damage as extra (fire|cold|lightning|chaos)/, sev: 'note', why: 'extra elemental damage — check resistances' },
+  { re: /chance to poison on hit/, sev: 'note', why: 'poison sources' },
+  { re: /inflict bleeding/, sev: 'note', why: 'bleed sources' },
+  { re: /cursed with temporal chains/, sev: 'note', why: 'periodic slow on you' },
+  { re: /cursed with enfeeble/, sev: 'note', why: 'your damage periodically reduced' },
+  { re: /(burning|shocked|chilled|desecrated) ground/, sev: 'note', why: 'ground hazards' },
+  { re: /increased (attack|cast) speed|increased movement speed/, sev: 'note', why: 'faster monsters' },
+];
+
+function adviseMapItem(parsed, tags) {
+  const findings = [];
+  for (const raw of parsed.explicits || []) {
+    const line = cleanMod(raw);
+    for (const r of ADVICE_RULES) {
+      if (!r.re.test(line)) continue;
+      let sev = r.sev;
+      if (r.tags && !r.tags.some((t) => tags.includes(t))) {
+        if (r.else === 'skip') break;
+        sev = 'note';
+      }
+      findings.push({ sev, why: r.why, mod: raw });
+      break;
+    }
+  }
+  const rewards = [];
+  for (const [k, v] of Object.entries(parsed.properties || {})) {
+    if (/rarity|quantity|pack size|waystone drop|monster effectiveness|experience/i.test(k)) {
+      rewards.push(`${k} ${v}`);
+    }
+  }
+  const bricks = findings.filter((f) => f.sev === 'brick').length;
+  const dangers = findings.filter((f) => f.sev === 'danger').length;
+  const verdict = bricks ? 'SKIP' : dangers >= 2 ? 'RISKY' : dangers === 1 ? 'CAUTION' : 'GOOD';
+  return { verdict, findings, rewards, tags };
+}
+
 // Static hosting of the built app (app/dist) so the Electron overlay loads the UI
 // from this server (same origin as /api) with no Vite dev process.
 const APP_DIST = path.join(ROOT, 'app', 'dist');
@@ -1279,6 +1352,10 @@ const server = http.createServer(async (req, res) => {
       }
       try {
         const s = await ensureScout();
+        // Waystones/tablets get build-aware pick advice instead of a trade
+        // search (their market value is not the interesting signal).
+        const isMapItem = parsed && /waystone|tablet/i.test(parsed.itemClass || '');
+        const advice = isMapItem ? adviseMapItem(parsed, await buildAdvisorTags()) : undefined;
         const hit = findScoutItem(s, name, base);
         // CurrentPrice of 0 means "no data", not "free" — treat as unpriced.
         if (hit && hit.CurrentPrice > 0) {
@@ -1287,9 +1364,10 @@ const server = http.createServer(async (req, res) => {
             source: `poe2scout 24h avg${s.stale ? ' (cached)' : ''}`,
             name: hit.Text || hit.Name, price: hit.CurrentPrice, currency: 'ex',
             divine: s.divinePrice ? hit.CurrentPrice / s.divinePrice : null,
+            ...(advice ? { advice } : {}),
           });
         }
-        const tradeable = parsed && ['Rare', 'Magic'].includes(rarity)
+        const tradeable = parsed && !isMapItem && ['Rare', 'Magic'].includes(rarity)
           && (parsed.explicits || []).length > 0;
         if (tradeable) {
           try {
@@ -1300,7 +1378,8 @@ const server = http.createServer(async (req, res) => {
         }
         return send(res, 200, {
           found: false, league: s.league,
-          note: rarity === 'Rare' ? 'rare items price via trade search (POST)' : 'no listed price',
+          note: isMapItem ? 'no list price' : rarity === 'Rare' ? 'rare items price via trade search (POST)' : 'no listed price',
+          ...(advice ? { advice } : {}),
         });
       } catch (e) {
         return send(res, 502, { error: String((e && e.message) || e) });
