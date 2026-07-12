@@ -23,17 +23,11 @@ Session HUD (top-center strip, tray-toggleable) and **Recommendations v2** done
 search, ✓ owned from captures, background-refreshed every 15 min). Rune/OCR module
 deferred (RuneshapePriceChecker covers runes this league). Settings window done 2026-07-12 (tray → Settings… / ⚙: rebindable hotkeys, overlay/
 game/account/advisor options, live apply; single-instance lock).
-**Next session = polish round 2, all approved by John 2026-07-12:**
-(1) trade-site deep link from the price card; (2) health status dot (server/scout/
-trade) in bar + tooltip; (3) first-run checks card (game found, elevation match,
-POESESSID set); (4) real tray/app icons; (5) price-card pinning (hold open);
-(6) HUD position presets (top-center clashes with boss bars); (7) **start with
-PoE2** = Steam launch-option line shown in settings w/ copy button + new "quit when
-game exits" option (grace ~2 min) + optional dormant start-with-Windows;
-(8) parser hardening (single-line `Requires:`, corpus oddities); (9) USAGE.md
-(hotkey cheat-sheet + feature tour; screenshots from John later); (10) **silent
-launcher** — run `electron.exe` directly (GUI exe, no console) via a `.vbs`/shortcut;
-keep the `.cmd` for first-run setup only. Then **Phase 6** (installer + auto-update).
+**Polish round 2 complete (2026-07-12 night, all 10 items)** — see CHANGELOG.md;
+daily launch is now the silent `PoE2 Overlay.vbs`; user docs in `USAGE.md`.
+**Next: Phase 6** — electron-builder NSIS installer + portable exe, auto-update via
+GitHub Releases (`assets/icon.ico` ready), first-run wizard polish. After that:
+screenshots for USAGE.md (John), leveling hints (next league), OCR (deferred).
 Still pending: GGG OAuth reply (follow up ~Jul 25). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
 `CHANGELOG.md` (update it every session) · roadmap/boundary: `PLAN.md` (§4b) ·
 external deps: `EXTERNAL-REQUIREMENTS.md` · secrets: `CREDENTIALS.local.md`
