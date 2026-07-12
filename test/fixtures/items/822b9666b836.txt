@@ -1,0 +1,29 @@
+Item Class: Wands
+Rarity: Rare
+Tempest Chant
+Withered Wand
+--------
+Quality: +20% (augmented)
+--------
+Requires: Level 64
+--------
+Sockets: S 
+--------
+Item Level: 82
+--------
+30% increased Spell Damage (rune)
+--------
+Grants Skill: Level 19 Chaos Bolt
+--------
+{ Prefix Modifier "Glyphic" (Tier: 2) — Damage, Caster }
+94(90-104)% increased Spell Damage
+{ Prefix Modifier "Vile" (Tier: 3) — Damage, Chaos }
+80(75-89)% increased Chaos Damage
+{ Prefix Modifier "Stormbound" (Tier: 1) — Damage, Elemental, Lightning }
+Gain 30(28-30)% of Damage as Extra Lightning Damage
+{ Suffix Modifier "of the Philosopher" (Tier: 4) — Attribute }
++24(21-24) to Intelligence
+{ Suffix Modifier "of Bliss" (Tier: 3) — Mana }
+49(40-49)% increased Mana Regeneration Rate
+{ Suffix Modifier "of Consumption" (Tier: 4) — Mana }
+Gain 19(15-20) Mana per enemy killed

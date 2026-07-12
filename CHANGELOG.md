@@ -4,6 +4,20 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-12 (later) — Polish round 1 (settings window)
+
+### Added
+- **Settings window** (tray → Settings…, or ⚙ in the panel bar): rebindable
+  hotkeys with press-to-capture fields (any Ctrl/Alt/Shift + A–Z/F1–F12/Space
+  chord — replaces the 4-preset dropdown), overlay options (opacity/size/
+  position/HUD), game paths (window title, Client.txt, BuildPlanner), account
+  (POESESSID masked write-only, OAuth id/contact), advisor tag override.
+  Saves apply live (no restart).
+- **Single-instance lock** — double-launching the .cmd no longer creates two
+  overlays.
+- Game window title is now a setting (`overlay.target`); `--target` CLI flag
+  still overrides for game-less testing.
+
 ## 2026-07-12 — Phase 5 (Recommendations v2: priced upgrade shopping list)
 
 ### Added

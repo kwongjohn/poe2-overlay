@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: #10141c; color: #dbe4ee;
+    font: 13px system-ui, sans-serif; }
+  #wrap { padding: 16px 20px 20px; }
+  h1 { font-size: 15px; color: #5eead4; margin: 0 0 4px; }
+  h2 { font-size: 12px; color: #8b98a9; text-transform: uppercase;
+    letter-spacing: .06em; margin: 18px 0 6px; border-bottom: 1px solid #1e2635;
+    padding-bottom: 4px; }
+  .row { display: flex; align-items: center; gap: 10px; margin: 7px 0; }
+  .row label { width: 170px; color: #aab6c6; flex-shrink: 0; }
+  input[type=text], input[type=password] { flex: 1; background: #1a2130;
+    color: #dbe4ee; border: 1px solid #2a3346; border-radius: 5px;
+    padding: 5px 8px; font-size: 12px; }
+  input.hotkey { cursor: pointer; text-align: center; font-weight: 600;
+    color: #5eead4; }
+  select { background: #1a2130; color: #dbe4ee; border: 1px solid #2a3346;
+    border-radius: 5px; padding: 4px 6px; }
+  input[type=range] { flex: 1; accent-color: #5eead4; }
+  .hint { font-size: 11px; color: #5b6676; margin: 2px 0 0 180px; }
+  #save { margin-top: 18px; width: 100%; padding: 9px; background: #14532d;
+    color: #bbf7d0; border: 1px solid #16a34a; border-radius: 6px;
+    font-weight: 600; cursor: pointer; }
+  #save:hover { background: #166534; }
+  #saved { color: #5eead4; font-size: 12px; text-align: center; margin-top: 8px;
+    visibility: hidden; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1>PoE2 Overlay — Settings</h1>
+
+  <h2>Hotkeys <span style="text-transform:none;color:#5b6676">(click a field, press the chord — A–Z, F1–F12, Space)</span></h2>
+  <div class="row"><label>Toggle panel</label><input type="text" class="hotkey" id="hotkey" readonly></div>
+  <div class="row"><label>Upgrade shopping list</label><input type="text" class="hotkey" id="recsHotkey" readonly></div>
+  <div class="hint">Item capture is always the game's own Ctrl+C. Hotkeys only fire while the game is focused.</div>
+
+  <h2>Overlay</h2>
+  <div class="row"><label>Panel opacity</label><input type="range" id="opacity" min="50" max="100"><span id="opv"></span></div>
+  <div class="row"><label>Panel size</label><select id="size"><option>S</option><option>M</option><option>L</option></select></div>
+  <div class="row"><label>Panel position</label><select id="corner">
+    <option value="bottom-right">bottom-right</option><option value="bottom-left">bottom-left</option>
+    <option value="top-right">top-right</option><option value="top-left">top-left</option>
+    <option value="custom">custom (drag the bar)</option></select></div>
+  <div class="row"><label>Session HUD</label><input type="checkbox" id="hud"></div>
+
+  <h2>Game</h2>
+  <div class="row"><label>Game window title</label><input type="text" id="target" placeholder="Path of Exile 2"></div>
+  <div class="row"><label>Client.txt path</label><input type="text" id="clientTxtPath"></div>
+  <div class="row"><label>BuildPlanner folder</label><input type="text" id="buildPlannerDir"></div>
+
+  <h2>Account</h2>
+  <div class="row"><label>POESESSID</label><input type="password" id="poesessid" placeholder="(not set)"></div>
+  <div class="hint">Used only for trade searches, sent only to pathofexile.com, stored locally.</div>
+  <div class="row"><label>GGG OAuth client id</label><input type="text" id="oauthClientId"></div>
+  <div class="row"><label>Contact email (User-Agent)</label><input type="text" id="oauthContact"></div>
+
+  <h2>Pick advisor</h2>
+  <div class="row"><label>Archetype tags</label><input type="text" id="tags" placeholder="auto (derived from target build)"></div>
+  <div class="hint">Comma-separated (chaos, dot, curse, minion, es, life). Leave empty to auto-derive.</div>
+
+  <button id="save">Save</button>
+  <div id="saved">Saved ✓ — applied live</div>
+</div>
+<script>
+  const API = 'http://127.0.0.1:4517';
+  const $ = id => document.getElementById(id);
+
+  for (const id of ['hotkey', 'recsHotkey']) {
+    $(id).addEventListener('keydown', e => {
+      e.preventDefault();
+      if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+      let key = null;
+      if (e.code.startsWith('Key')) key = e.code.slice(3);
+      else if (/^F\d{1,2}$/.test(e.code)) key = e.code;
+      else if (e.code === 'Space') key = 'Space';
+      if (!key) return;
+      const mods = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift'].filter(Boolean);
+      $(id).value = [...mods, key].join('+');
+    });
+  }
+  $('opacity').oninput = e => $('opv').textContent = e.target.value + '%';
+
+  let current = {};
+  fetch(`${API}/api/settings`).then(r => r.json()).then(s => {
+    current = s;
+    const o = s.overlay || {};
+    $('hotkey').value = o.hotkey || 'Ctrl+Alt+O';
+    $('recsHotkey').value = o.recsHotkey || 'Ctrl+Alt+U';
+    $('opacity').value = Math.round((o.opacity ?? 0.96) * 100);
+    $('opv').textContent = $('opacity').value + '%';
+    $('size').value = o.size || 'M';
+    $('corner').value = o.corner || 'bottom-right';
+    $('hud').checked = o.hud !== false;
+    $('target').value = o.target || 'Path of Exile 2';
+    $('clientTxtPath').value = s.clientTxtPath || '';
+    $('buildPlannerDir').value = s.buildPlannerDir || '';
+    if (s.poesessid === '(set)') $('poesessid').placeholder = '•••••••• (set — type to replace)';
+    $('oauthClientId').value = s.oauthClientId || '';
+    $('oauthContact').value = s.oauthContact || '';
+    $('tags').value = ((s.advisor || {}).tags || []).join(', ');
+  });
+
+  $('save').onclick = async () => {
+    const body = {
+      overlay: {
+        hotkey: $('hotkey').value, recsHotkey: $('recsHotkey').value,
+        opacity: $('opacity').value / 100, size: $('size').value,
+        corner: $('corner').value, hud: $('hud').checked,
+        target: $('target').value.trim() || 'Path of Exile 2',
+      },
+      advisor: { tags: $('tags').value.split(',').map(t => t.trim()).filter(Boolean) },
+    };
+    if ($('clientTxtPath').value.trim()) body.clientTxtPath = $('clientTxtPath').value.trim();
+    if ($('buildPlannerDir').value.trim()) body.buildPlannerDir = $('buildPlannerDir').value.trim();
+    if ($('poesessid').value.trim()) body.poesessid = $('poesessid').value.trim();
+    body.oauthClientId = $('oauthClientId').value.trim();
+    body.oauthContact = $('oauthContact').value.trim();
+    const r = await fetch(`${API}/api/settings`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (r.ok) {
+      window.overlay.settingsSaved();
+      $('poesessid').value = '';
+      $('saved').style.visibility = 'visible';
+      setTimeout(() => $('saved').style.visibility = 'hidden', 2500);
+    }
+  };
+</script>
+</body>
+</html>

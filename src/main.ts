@@ -19,12 +19,20 @@ const API = 'http://127.0.0.1:4517';
 const BAR_H = 34;
 const MARGIN = 16;
 const SIZES: Record<string, [number, number]> = { S: [900, 600], M: [1100, 720], L: [1400, 850] };
-const HOTKEYS: Record<string, { ctrl: boolean; alt: boolean; keycode: number }> = {
-  'Ctrl+Alt+O': { ctrl: true, alt: true, keycode: UiohookKey.O },
-  'Ctrl+Alt+Space': { ctrl: true, alt: true, keycode: UiohookKey.Space },
-  'F8': { ctrl: false, alt: false, keycode: UiohookKey.F8 },
-  'F9': { ctrl: false, alt: false, keycode: UiohookKey.F9 },
-};
+
+// "Ctrl+Alt+O" / "Shift+F8" / "Space" → uiohook chord. Supported keys: A–Z,
+// F1–F12, Space (what UiohookKey names directly).
+function parseHotkey(s: string, fallback = 'Ctrl+Alt+O') {
+  const parts = (s || fallback).split('+').map((p) => p.trim()).filter(Boolean);
+  const raw = parts.pop() || 'O';
+  const name = raw.length === 1 ? raw.toUpperCase() : raw[0].toUpperCase() + raw.slice(1);
+  const keycode = (UiohookKey as unknown as Record<string, number>)[name];
+  const has = (m: string) => parts.some((p) => p.toLowerCase() === m);
+  return {
+    ctrl: has('ctrl'), alt: has('alt'), shift: has('shift'),
+    keycode: keycode ?? (UiohookKey as unknown as Record<string, number>).O,
+  };
+}
 
 // --- win32 via koffi ---------------------------------------------------------
 const user32 = koffi.load('user32.dll');
@@ -42,21 +50,23 @@ function windowTitle(hwnd: unknown): string {
 
 // --- config / state ----------------------------------------------------------
 const targetArg = process.argv.find(a => a.startsWith('--target='))?.slice(9);
-const TARGET = new RegExp(targetArg ?? 'Path of Exile 2', 'i');
-const TARGET_EXACT = targetArg ? null : 'Path of Exile 2'; // for FindWindowW when hidden
+let TARGET = new RegExp(targetArg ?? 'Path of Exile 2', 'i');
+let TARGET_EXACT: string | null = targetArg ? null : 'Path of Exile 2'; // for FindWindowW when hidden
 
 type OverlaySettings = {
-  opacity: number; size: string; corner: string; hotkey: string;
-  customDx: number; customDy: number; hud: boolean;
+  opacity: number; size: string; corner: string; hotkey: string; recsHotkey: string;
+  customDx: number; customDy: number; hud: boolean; target: string;
 };
 const DEFAULTS: OverlaySettings = {
   opacity: 0.96, size: 'M', corner: 'bottom-right', hotkey: 'Ctrl+Alt+O',
-  customDx: 0, customDy: 0, hud: true,
+  recsHotkey: 'Ctrl+Alt+U', customDx: 0, customDy: 0, hud: true,
+  target: 'Path of Exile 2',
 };
 
 let win: BrowserWindow | null = null;
 let priceWin: BrowserWindow | null = null;
 let hudWin: BrowserWindow | null = null;
+let settingsWin: BrowserWindow | null = null;
 let priceTimer: NodeJS.Timeout | null = null;
 let view: WebContentsView | null = null;
 let tray: Tray | null = null;
@@ -113,6 +123,11 @@ function persistCfg() {
 
 function applyCfg() {
   if (!win) return;
+  // The CLI --target flag (spike/testing) wins over the setting.
+  if (!targetArg && cfg.target) {
+    TARGET = new RegExp(cfg.target, 'i');
+    TARGET_EXACT = cfg.target;
+  }
   win.setOpacity(cfg.opacity);
   const [w, h] = SIZES[cfg.size] || SIZES.M;
   const b = win.getBounds();
@@ -332,28 +347,52 @@ function captureClipboard() {
 
 // --- hotkeys ------------------------------------------------------------------
 function startHotkeys() {
+  const chordMatch = (e: { ctrlKey: boolean; altKey: boolean; shiftKey: boolean; keycode: number },
+    hk: { ctrl: boolean; alt: boolean; shift: boolean; keycode: number }) =>
+    e.ctrlKey === hk.ctrl && e.altKey === hk.alt && e.shiftKey === hk.shift && e.keycode === hk.keycode;
   uIOhook.on('keydown', e => {
     if (!attached) return; // never react outside the game
-    const hk = HOTKEYS[cfg.hotkey] || HOTKEYS['Ctrl+Alt+O'];
-    if (e.ctrlKey === hk.ctrl && e.altKey === hk.alt && e.keycode === hk.keycode) {
-      setPanel(!panelOpen);
-    }
-    if (e.ctrlKey && e.altKey && e.keycode === UiohookKey.U) void showRecs();
+    if (chordMatch(e, parseHotkey(cfg.hotkey))) setPanel(!panelOpen);
+    if (chordMatch(e, parseHotkey(cfg.recsHotkey, 'Ctrl+Alt+U'))) void showRecs();
     if (e.ctrlKey && e.keycode === UiohookKey.C) captureClipboard();
   });
   uIOhook.start();
   log(`hotkeys active (while attached): ${cfg.hotkey} = toggle panel, Ctrl+C = capture item, Ctrl+Alt+U = upgrade list`);
 }
 
-// --- IPC from the chrome bar ---------------------------------------------------
+// --- settings window -------------------------------------------------------------
+function openSettings() {
+  if (settingsWin) { settingsWin.show(); settingsWin.focus(); return; }
+  settingsWin = new BrowserWindow({
+    width: 520, height: 700, title: 'PoE2 Overlay — Settings',
+    autoHideMenuBar: true, resizable: false,
+    webPreferences: { preload: path.join(__dirname, 'preload.js') },
+  });
+  settingsWin.loadFile(path.join(ROOT, 'src', 'settings.html'));
+  settingsWin.on('closed', () => { settingsWin = null; });
+}
+
+// --- IPC from the chrome bar / settings window -------------------------------------
 ipcMain.on('overlay:set', (_e, patch: Partial<OverlaySettings>) => {
   cfg = { ...cfg, ...patch };
   applyCfg();
   persistCfg();
 });
 ipcMain.on('overlay:hide', () => setPanel(false));
+ipcMain.on('overlay:openSettings', () => openSettings());
+ipcMain.on('overlay:settingsSaved', async () => {
+  // The settings window PUT everything to the server; re-read and re-apply live.
+  await loadCfg();
+  applyCfg();
+  setHudVisible(attached && cfg.hud !== false);
+  log('settings reloaded from settings window');
+});
 
 // --- app -----------------------------------------------------------------------
+// Two overlays fighting over one game window (double-clicked launcher) is
+// confusing — the second instance just exits.
+if (!app.requestSingleInstanceLock()) app.quit();
+
 app.whenReady().then(async () => {
   startServer();
   const up = await waitForServer();
@@ -405,7 +444,8 @@ app.whenReady().then(async () => {
   tray.setToolTip('PoE2 Overlay');
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Toggle panel', click: () => setPanel(!panelOpen) },
-    { label: 'Upgrade shopping list (Ctrl+Alt+U)', click: () => void showRecs() },
+    { label: 'Upgrade shopping list', click: () => void showRecs() },
+    { label: 'Settings…', click: () => openSettings() },
     {
       label: 'Toggle session HUD',
       click: () => {

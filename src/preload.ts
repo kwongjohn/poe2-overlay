@@ -9,4 +9,6 @@ contextBridge.exposeInMainWorld('overlay', {
     ipcRenderer.on('recs', (_e, data) => cb(data)),
   set: (patch: Record<string, unknown>) => ipcRenderer.send('overlay:set', patch),
   hide: () => ipcRenderer.send('overlay:hide'),
+  openSettings: () => ipcRenderer.send('overlay:openSettings'),
+  settingsSaved: () => ipcRenderer.send('overlay:settingsSaved'),
 });

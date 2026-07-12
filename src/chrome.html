@@ -31,10 +31,7 @@
     <option value="top-right">↗</option><option value="top-left">↖</option>
     <option value="custom">drag</option>
   </select></label>
-  <label>Key <select id="hotkey">
-    <option selected>Ctrl+Alt+O</option><option>Ctrl+Alt+Space</option>
-    <option>F8</option><option>F9</option>
-  </select></label>
+  <button id="settings" title="Settings (hotkeys, paths, account)">⚙</button>
   <button id="hide" title="Hide (or press the hotkey)">✕</button>
 </div>
 <script>
@@ -42,14 +39,13 @@
   $('opacity').oninput = e => window.overlay.set({ opacity: e.target.value / 100 });
   $('size').onchange = e => window.overlay.set({ size: e.target.value });
   $('corner').onchange = e => window.overlay.set({ corner: e.target.value });
-  $('hotkey').onchange = e => window.overlay.set({ hotkey: e.target.value });
+  $('settings').onclick = () => window.overlay.openSettings();
   $('hide').onclick = () => window.overlay.hide();
   window.overlay.onStatus(d => {
     if (d.item) $('item').textContent = d.item;
     $('opacity').value = Math.round(d.cfg.opacity * 100);
     $('size').value = d.cfg.size;
     $('corner').value = d.cfg.corner;
-    $('hotkey').value = d.cfg.hotkey;
   });
 </script>
 </body>
