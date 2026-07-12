@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: transparent; overflow: hidden;
+    font: 12px system-ui, sans-serif; color: #dbe4ee; user-select: none; }
+  #strip { display: flex; align-items: center; gap: 14px; height: 26px;
+    margin: 3px; padding: 0 12px; border-radius: 13px; white-space: nowrap;
+    background: rgba(16, 20, 28, .78); border: 1px solid rgba(94,234,212,.2);
+    justify-content: center; }
+  .k { color: #8b98a9; margin-right: 3px; }
+  #char { color: #5eead4; font-weight: 600; }
+  #deaths.bad { color: #f87171; }
+  #zone { color: #c9b37e; }
+</style>
+</head>
+<body>
+<div id="strip">
+  <span id="char">—</span>
+  <span id="level"></span>
+  <span id="zone"></span>
+  <span><span class="k">💀</span><span id="deaths">0</span></span>
+  <span><span class="k">zone</span><span id="dwell">–</span></span>
+  <span><span class="k">session</span><span id="session">–</span></span>
+</div>
+<script>
+  const API = 'http://127.0.0.1:4517';
+  const $ = id => document.getElementById(id);
+  let sessionStart = null, zoneAt = null, lastArea = null;
+
+  // "MapIceCave" → "Ice Cave"; unknown id formats pass through untouched.
+  const pretty = a => a ? a.replace(/^Map/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : '–';
+  const dur = ms => {
+    const m = Math.floor(ms / 60000), h = Math.floor(m / 60);
+    return h ? `${h}h${String(m % 60).padStart(2, '0')}` : `${m}m`;
+  };
+
+  function render(st) {
+    $('char').textContent = st.character || '—';
+    $('level').textContent = st.level ? `L${st.level}` : '';
+    $('zone').textContent = pretty(st.area) + (st.areaLevel ? ` (${st.areaLevel})` : '');
+    $('deaths').textContent = st.deaths || 0;
+    $('deaths').className = st.deaths > 0 ? 'bad' : '';
+    if (st.sessionStart) sessionStart = st.sessionStart;
+    if (st.area !== lastArea) { lastArea = st.area; zoneAt = Date.now(); }
+  }
+
+  fetch(`${API}/api/live/state`).then(r => r.json()).then(render).catch(() => {});
+  const es = new EventSource(`${API}/api/live`);
+  es.addEventListener('state', e => { try { render(JSON.parse(e.data)); } catch {} });
+
+  setInterval(() => {
+    if (sessionStart) $('session').textContent = dur(Date.now() - sessionStart);
+    if (zoneAt) $('dwell').textContent = dur(Date.now() - zoneAt);
+  }, 5000);
+</script>
+</body>
+</html>

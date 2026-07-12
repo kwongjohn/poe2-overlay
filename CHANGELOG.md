@@ -4,6 +4,20 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-10 (late) — Phase 4b (session HUD strip)
+
+### Added
+- **Session HUD**: thin click-through strip pinned top-center of the game window
+  while attached — character · level · zone (+area level) · deaths · time-in-zone
+  · session time. Live via the companion server's SSE stream (`/api/live`), no new
+  endpoints. Tray menu: "Toggle session HUD" (persisted as `overlay.hud`).
+
+### Fixed
+- `settings.advisor` was missing from the PUT whitelist — the documented
+  archetype-tag override was unreachable. (Found while demoing that the same
+  waystone scores RISKY for the chaos/curse/ES build but CAUTION for a
+  minion/life build.)
+
 ## 2026-07-10 (evening) — Phase 4 (pick advisor + map-mod warnings)
 
 ### Added

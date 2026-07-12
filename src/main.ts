@@ -47,15 +47,16 @@ const TARGET_EXACT = targetArg ? null : 'Path of Exile 2'; // for FindWindowW wh
 
 type OverlaySettings = {
   opacity: number; size: string; corner: string; hotkey: string;
-  customDx: number; customDy: number;
+  customDx: number; customDy: number; hud: boolean;
 };
 const DEFAULTS: OverlaySettings = {
   opacity: 0.96, size: 'M', corner: 'bottom-right', hotkey: 'Ctrl+Alt+O',
-  customDx: 0, customDy: 0,
+  customDx: 0, customDy: 0, hud: true,
 };
 
 let win: BrowserWindow | null = null;
 let priceWin: BrowserWindow | null = null;
+let hudWin: BrowserWindow | null = null;
 let priceTimer: NodeJS.Timeout | null = null;
 let view: WebContentsView | null = null;
 let tray: Tray | null = null;
@@ -183,12 +184,21 @@ function poll() {
   if (koffi.address(hwnd) === ownHwnd) return; // interacting with our panel
 
   const isGame = TARGET.test(windowTitle(hwnd));
-  if (isGame && !attached) { attached = true; log('game attached'); sendStatus(); }
-  if (isGame && panelOpen) reposition(); // follow if the game window moves
+  if (isGame && !attached) {
+    attached = true;
+    setHudVisible(cfg.hud !== false);
+    log('game attached');
+    sendStatus();
+  }
+  if (isGame) {
+    if (panelOpen) reposition(); // follow if the game window moves
+    if (cfg.hud !== false) positionHud();
+  }
   if (!isGame && attached) {
     attached = false;
     if (panelOpen) setPanel(false); // never linger over other apps
     priceWin?.hide();
+    setHudVisible(false);
     log('game detached');
     sendStatus();
   }
@@ -231,6 +241,31 @@ function showPriceCard(item: unknown, price: { advice?: { findings: unknown[], r
   priceWin.showInactive();
   if (priceTimer) clearTimeout(priceTimer);
   priceTimer = setTimeout(() => priceWin?.hide(), 6000);
+}
+
+// --- session HUD strip -----------------------------------------------------------
+function makeHudWin() {
+  hudWin = new BrowserWindow({
+    width: 480, height: 34, frame: false, transparent: true, resizable: false,
+    alwaysOnTop: true, skipTaskbar: true, show: false,
+    webPreferences: {}, // plain page; talks to the companion server directly
+  });
+  hudWin.setAlwaysOnTop(true, 'screen-saver');
+  hudWin.setIgnoreMouseEvents(true);
+  hudWin.loadFile(path.join(ROOT, 'src', 'hud.html'));
+}
+
+function positionHud() {
+  if (!hudWin) return;
+  const g = gameDipRect();
+  if (!g) return;
+  const [w] = hudWin.getSize();
+  hudWin.setPosition(Math.round(g.x + (g.width - w) / 2), Math.round(g.y + 6));
+}
+
+function setHudVisible(on: boolean) {
+  if (!hudWin) return;
+  if (on) { positionHud(); hudWin.showInactive(); } else hudWin.hide();
 }
 
 // --- clipboard capture (user-pressed Ctrl+C only) ------------------------------
@@ -316,6 +351,7 @@ app.whenReady().then(async () => {
   await win.loadFile(path.join(ROOT, 'src', 'chrome.html'));
 
   makePriceWin();
+  makeHudWin();
   view = new WebContentsView({ webPreferences: {} });
   win.contentView.addChildView(view);
   layoutView();
@@ -342,6 +378,14 @@ app.whenReady().then(async () => {
   tray.setToolTip('PoE2 Overlay');
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Toggle panel', click: () => setPanel(!panelOpen) },
+    {
+      label: 'Toggle session HUD',
+      click: () => {
+        cfg.hud = cfg.hud === false;
+        if (attached) setHudVisible(cfg.hud);
+        persistCfg();
+      },
+    },
     { label: 'Quit', click: () => app.quit() },
   ]));
 
