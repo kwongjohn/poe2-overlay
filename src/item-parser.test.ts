@@ -112,6 +112,13 @@ test('unidentified magic item (real capture)', () => {
   assert.equal(it.itemLevel, 79);
   assert.equal(it.explicits.length, 0);
   assert.equal(it.properties['Energy Shield'], '171');
+  // PoE2 single-line requirement form
+  assert.deepEqual(it.requirements, { Intelligence: 121 });
+});
+
+test('single-line multi-part requirements', () => {
+  const it = parseItem('Item Class: Belts\nRarity: Normal\nMail Belt\n--------\nRequires: Level 40, 55 Str')!;
+  assert.deepEqual(it.requirements, { Level: 40, Str: 55 });
 });
 
 // Every real item captured in-game lands in test/fixtures/items/ (via the

@@ -1,0 +1,28 @@
+Item Class: Waystones
+Rarity: Rare
+Stained Determination
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +24% (augmented)
+Pack Size: +18% (augmented)
+Monster Effectiveness: +28% (augmented)
+Waystone Drop Chance: +95% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 15(10-15)% increased Attack, Cast and Movement Speed
+{ Prefix Modifier "Puncturing" (Tier: 1) }
+Monsters have 19(15-20)% chance to inflict Bleeding on Hit
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 203(200-240)% increased Critical Hit Chance
+Monsters have +24(21-25)% Critical Damage Bonus
+{ Suffix Modifier "of Overpowering" (Tier: 1) }
+Monster have 102(100-119)% increased Elemental Ailment Application
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 20(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "Flaming" (Tier: 1) }
+Area has patches of Ignited Ground
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

@@ -21,5 +21,6 @@ echo Building...
 call npx tsc || (pause & exit /b 1)
 
 echo Starting overlay (watches for the Path of Exile 2 window)...
-start "" ".\node_modules\.bin\electron.cmd" .
+echo Tip: for daily use, double-click "PoE2 Overlay.vbs" instead (no console window).
+start "" ".\node_modules\electron\dist\electron.exe" .
 exit /b 0

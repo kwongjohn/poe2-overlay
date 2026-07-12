@@ -1,0 +1,30 @@
+Item Class: Waystones
+Rarity: Rare
+Chaos Remnant
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +15% (augmented)
+Pack Size: +26% (augmented)
+Monster Rarity: +48% (augmented)
+Waystone Drop Chance: +105% (augmented)
+--------
+Item Level: 80
+--------
+{ Prefix Modifier "Profane" (Tier: 1) }
+Monsters deal 15(15-19)% of Damage as Extra Chaos
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 12(10-15)% increased Attack, Cast and Movement Speed
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 239(200-240)% increased Critical Hit Chance
+Monsters have +22(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Painful" (Tier: 1) }
+17(15-19)% increased Monster Damage
+{ Prefix Modifier "Thunderous" (Tier: 1) }
+Monsters deal 16(15-19)% of Damage as Extra Lightning
+{ Prefix Modifier "Tough" (Tier: 1) }
+22(20-25)% more Monster Life
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+--------
+Corrupted

@@ -1,0 +1,30 @@
+Item Class: Waystones
+Rarity: Rare
+Hidden Compass
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +15% (augmented)
+Pack Size: +16% (augmented)
+Monster Rarity: +44% (augmented)
+Waystone Drop Chance: +85% (augmented)
+--------
+Item Level: 82
+--------
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 230(200-240)% increased Critical Hit Chance
+Monsters have +24(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Shattering" (Tier: 1) }
+Monsters Break Armour equal to 25(25-30)% of Physical Damage dealt
+{ Prefix Modifier "Profane" (Tier: 1) }
+Monsters deal 15(15-19)% of Damage as Extra Chaos
+{ Prefix Modifier "Venomous" (Tier: 1) }
+Monsters have 28(27-33)% chance to Poison on Hit
+{ Prefix Modifier "Painful" (Tier: 1) }
+16(15-19)% increased Monster Damage
+{ Prefix Modifier "Infernal" (Tier: 1) }
+Monsters deal 16(15-19)% of Damage as Extra Fire
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+--------
+Corrupted

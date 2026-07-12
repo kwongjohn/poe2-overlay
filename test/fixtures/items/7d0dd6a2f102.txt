@@ -1,0 +1,29 @@
+Item Class: Waystones
+Rarity: Rare
+Secluded Trajectory
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +22% (augmented)
+Pack Size: +22% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +80% (augmented)
+--------
+Item Level: 80
+--------
+{ Prefix Modifier "Thunderous" (Tier: 1) }
+Monsters deal 17(15-19)% of Damage as Extra Lightning
+{ Prefix Modifier "Impacting" (Tier: 1) }
+Monsters have 96(90-100)% increased Stun Buildup
+{ Prefix Modifier "Venomous" (Tier: 1) }
+Monsters have 27(27-33)% chance to Poison on Hit
+{ Suffix Modifier "Sleet" (Tier: 1) }
+Area has patches of Chilled Ground
+{ Suffix Modifier "of Hexwarding" (Tier: 1) }
+45(50-40)% less effect of Curses on Monsters
+{ Suffix Modifier "of Drought" (Tier: 1) }
+Players gain 31(35-30)% reduced Flask Charges
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+--------
+Corrupted

@@ -22,6 +22,7 @@
 </head>
 <body>
 <div id="bar">
+  <span id="dot" style="font-size:10px; color:#8b98a9" title="checking…">●</span>
   <span class="t">PoE2 Overlay</span>
   <span class="item" id="item"></span>
   <label>Opacity <input type="range" id="opacity" min="50" max="100" value="96"></label>
@@ -47,6 +48,26 @@
     $('size').value = d.cfg.size;
     $('corner').value = d.cfg.corner;
   });
+
+  // Health dot: green = all good, amber = degraded (named in tooltip), red = server down.
+  async function checkHealth() {
+    try {
+      const h = await (await fetch('http://127.0.0.1:4517/api/health')).json();
+      const issues = [];
+      if (h.scout && h.scout.stale) issues.push('prices from cache (poe2scout unreachable)');
+      if (h.trade && h.trade.coolingDown) issues.push('trade API cooling down');
+      if (h.trade && !h.trade.poesessid) issues.push('POESESSID not set — rare pricing off');
+      if (!h.clientTxt) issues.push('Client.txt not watched');
+      if (!h.target) issues.push('no compare target set');
+      $('dot').style.color = issues.length ? '#f5d90a' : '#22c55e';
+      $('dot').title = issues.length ? issues.join('\n') : 'all systems go';
+    } catch {
+      $('dot').style.color = '#f87171';
+      $('dot').title = 'companion server unreachable';
+    }
+  }
+  checkHealth();
+  setInterval(checkHealth, 30000);
 </script>
 </body>
 </html>

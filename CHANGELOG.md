@@ -4,6 +4,31 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-12 (night) — Polish round 2 (all 10 John-approved items)
+
+### Added
+- **Trade deep link**: `Ctrl+Alt+T` opens the last price check as a real trade-site
+  search in the browser (search id reused from the API response).
+- **Card pinning**: `Ctrl+Alt+P` holds the current card open (gold border);
+  press again to release.
+- **Health dot** in the panel bar: green/amber/red with tooltip naming the
+  degraded component (scout stale, trade cooldown, POESESSID missing, Client.txt,
+  target build); `/api/health` now reports per-component status.
+- **Setup checklist toast** at launch, only when something's missing
+  (POESESSID / target build / Client.txt).
+- **Real icons** (GDI+-generated waystone-diamond motif): tray, settings window,
+  `assets/icon.ico` for the Phase 6 installer.
+- **HUD position setting** (top-center/left/right, bottom-center).
+- **Startup options**: start with Windows (dormant tray), **quit when the game
+  exits** (2-min grace), and a copyable **Steam launch-option line** in Settings
+  so the overlay starts with PoE2 itself.
+- **Silent launcher** `PoE2 Overlay.vbs` — runs `electron.exe` directly, no
+  console window (the `.cmd` stays for first-run setup and now also launches
+  console-free).
+- **USAGE.md**: setup, hotkey table, feature tour (screenshot placeholders).
+- Parser: PoE2's single-line `Requires:` (incl. multi-part "Level 40, 55 Str")
+  now parses into requirements (+2 tests, 7 total).
+
 ## 2026-07-12 (later) — Polish round 1 (settings window)
 
 ### Added

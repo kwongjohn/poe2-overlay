@@ -95,6 +95,16 @@ export function parseItem(text: string): ParsedItem | null {
           const m = /^([\d,]+)\/([\d,]+)/.exec(v);
           if (m) item.stackSize = { cur: +m[1].replace(/,/g, ''), max: +m[2].replace(/,/g, '') };
         } else if (k === 'Sockets') item.sockets = (v.match(/S/g) || []).length;
+        else if (k === 'Requires') {
+          // PoE2 single-line form: "Requires: Level 40" / "121 Intelligence" /
+          // "Level 64, 120 Str, 68 Int" (block form handled above).
+          for (const part of v.split(',').map((s) => s.trim())) {
+            let m = /^Level (\d+)/.exec(part);
+            if (m) { item.requirements.Level = +m[1]; continue; }
+            m = /^(\d+) (\w+)/.exec(part.replace(/ \(unmet\)$/, ''));
+            if (m) item.requirements[m[2]] = +m[1];
+          }
+        }
         else item.properties[k] = v.replace(/ \((augmented|unmet)\)$/, '');
         continue;
       }

@@ -1186,6 +1186,8 @@ async function tradePrice(parsed, scoutState, opts = {}) {
   return {
     found: true, relaxed,
     source: `trade (online, cheapest first${relaxed ? ', top-3 mods' : ''})`,
+    // The same search, openable in the browser (search ids stay valid a while).
+    tradeUrl: `https://www.pathofexile.com/trade2/search/poe2/${league}/${search.id}`,
     league: scoutState.league,
     currency: 'ex', total: search.total,
     price: exPrices[0], // "from" price
@@ -1372,6 +1374,11 @@ const server = http.createServer(async (req, res) => {
         version: 1,
         buildPlannerDir: settings.buildPlannerDir,
         buildPlannerDirExists: fs.existsSync(settings.buildPlannerDir),
+        // Component status for the overlay's health dot.
+        scout: { items: scout.items.length, stale: !!scout.stale, fetchedAt: scout.fetchedAt },
+        trade: { coolingDown: tradeCooldownUntil > Date.now(), poesessid: !!settings.poesessid },
+        target: !!(await readTargetRef().then((r) => r.file).catch(() => null)),
+        clientTxt: live.connected,
       });
     }
 

@@ -32,6 +32,10 @@
   <div id="advice" style="display:none"></div>
   <div class="src" id="src"></div>
 </div>
+<div class="card" id="noticecard" style="display:none">
+  <div class="name" style="color:#f5d90a" id="noticetitle"></div>
+  <div id="noticelines"></div>
+</div>
 <div class="card" id="recscard" style="display:none">
   <div class="name" style="color:#5eead4">Upgrade shopping list</div>
   <div id="recrows"></div>
@@ -42,8 +46,22 @@
   const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const fmtEx = v => v >= 100 ? Math.round(v) : v >= 10 ? v.toFixed(1) : v.toFixed(2);
 
+  window.overlay.onNotice(d => {
+    $('pricecard').style.display = 'none';
+    $('recscard').style.display = 'none';
+    $('noticecard').style.display = 'block';
+    $('noticetitle').textContent = d.title;
+    $('noticelines').innerHTML = d.lines.map(l => `<div class="find note">• ${esc(l)}</div>`).join('');
+  });
+
+  window.overlay.onPin(p => {
+    document.querySelectorAll('.card').forEach(c =>
+      c.style.borderColor = p ? '#f5d90a' : 'rgba(94,234,212,.3)');
+  });
+
   window.overlay.onRecs(d => {
     $('pricecard').style.display = 'none';
+    $('noticecard').style.display = 'none';
     $('recscard').style.display = 'block';
     if (!d.items || !d.items.length) {
       $('recrows').innerHTML = `<div class="none">${esc(d.note || (d.computing ? 'computing prices…' : 'nothing to show'))}</div>`;
@@ -65,6 +83,7 @@
 
   window.overlay.onPrice(d => {
     $('recscard').style.display = 'none';
+    $('noticecard').style.display = 'none';
     $('pricecard').style.display = 'block';
     $('name').textContent = d.item.name || d.item.baseType || '?';
     $('name').className = 'name ' + (d.item.rarity || '');
@@ -78,7 +97,9 @@
         ? ` <span class="div">× ${d.item.stackSize.cur} = ${(d.price.price * d.item.stackSize.cur).toFixed(0)} ex</span>` : '';
       $('priceline').innerHTML = line + '</div>';
       const un = (d.price.unmatched || []).length;
-      $('src').textContent = `${d.price.source} · ${d.price.league}` + (un ? ` · ${un} mod(s) not in search` : '');
+      $('src').textContent = `${d.price.source} · ${d.price.league}`
+        + (un ? ` · ${un} mod(s) not in search` : '')
+        + (d.price.tradeUrl ? ' · Ctrl+Alt+T: open trade · Ctrl+Alt+P: pin' : ' · Ctrl+Alt+P: pin');
     } else {
       $('priceline').innerHTML = `<div class="none">${d.price.note || 'no listed price'}</div>`;
       $('src').textContent = d.price.league || '';

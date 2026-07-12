@@ -1,0 +1,30 @@
+Item Class: Waystones
+Rarity: Rare
+Ghastly Panorama
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +15% (augmented)
+Pack Size: +16% (augmented)
+Monster Rarity: +36% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +95% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 13(10-15)% increased Attack, Cast and Movement Speed
+{ Prefix Modifier "Impacting" (Tier: 1) }
+Monsters have 96(90-100)% increased Stun Buildup
+{ Prefix Modifier "Profane" (Tier: 1) }
+Monsters deal 18(15-19)% of Damage as Extra Chaos
+{ Suffix Modifier "of Obstruction" (Tier: 1) }
+Monsters take 26(26-30)% reduced Extra Damage from Critical Hits
+{ Suffix Modifier "Shocking" (Tier: 1) }
+Area has patches of Shocked Ground — Unscalable Value
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+--------
+Corrupted

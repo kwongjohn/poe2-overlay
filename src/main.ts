@@ -7,8 +7,9 @@
 //     PUT /api/settings under `overlay`.
 // Compliance: display + clipboard read only. No memory reading, no input injection.
 
-import { app, BrowserWindow, WebContentsView, Tray, Menu, screen, clipboard, ipcMain, nativeImage } from 'electron';
+import { app, BrowserWindow, WebContentsView, Tray, Menu, screen, clipboard, ipcMain, nativeImage, shell } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as koffi from 'koffi';
 import { uIOhook, UiohookKey } from 'uiohook-napi';
@@ -55,12 +56,14 @@ let TARGET_EXACT: string | null = targetArg ? null : 'Path of Exile 2'; // for F
 
 type OverlaySettings = {
   opacity: number; size: string; corner: string; hotkey: string; recsHotkey: string;
-  customDx: number; customDy: number; hud: boolean; target: string;
+  customDx: number; customDy: number; hud: boolean; hudPos: string; target: string;
+  quitOnGameExit: boolean; startWithWindows: boolean;
 };
 const DEFAULTS: OverlaySettings = {
   opacity: 0.96, size: 'M', corner: 'bottom-right', hotkey: 'Ctrl+Alt+O',
   recsHotkey: 'Ctrl+Alt+U', customDx: 0, customDy: 0, hud: true,
-  target: 'Path of Exile 2',
+  hudPos: 'top-center', target: 'Path of Exile 2',
+  quitOnGameExit: false, startWithWindows: false,
 };
 
 let win: BrowserWindow | null = null;
@@ -79,6 +82,10 @@ let lastGameRect: { x: number; y: number; width: number; height: number } | null
 let selfMove = false;        // suppress 'move' events we caused
 let saveTimer: NodeJS.Timeout | null = null;
 let lastItem = '';
+let lastTradeUrl: string | null = null;
+let pinned = false;
+let lastGameSeen = 0;   // for quit-on-game-exit
+let everSawGame = false;
 
 function log(msg: string) { console.log(`[overlay] ${msg}`); }
 
@@ -129,6 +136,11 @@ function applyCfg() {
     TARGET_EXACT = cfg.target;
   }
   win.setOpacity(cfg.opacity);
+  app.setLoginItemSettings({
+    openAtLogin: !!cfg.startWithWindows,
+    path: process.execPath,
+    args: [ROOT],
+  });
   const [w, h] = SIZES[cfg.size] || SIZES.M;
   const b = win.getBounds();
   if (b.width !== w || b.height !== h) {
@@ -199,6 +211,15 @@ function poll() {
   if (koffi.address(hwnd) === ownHwnd) return; // interacting with our panel
 
   const isGame = TARGET.test(windowTitle(hwnd));
+  // Quit-with-the-game: once we've seen the game, if its window is gone
+  // (not just unfocused) for >2 min and the option is on, exit.
+  const gameExists = isGame || !!(TARGET_EXACT && FindWindowW(null, TARGET_EXACT));
+  if (gameExists) { lastGameSeen = Date.now(); everSawGame = true; }
+  else if (cfg.quitOnGameExit && everSawGame && Date.now() - lastGameSeen > 120000) {
+    log('game closed >2 min and quitOnGameExit is on — exiting');
+    app.quit();
+    return;
+  }
   if (isGame && !attached) {
     attached = true;
     setHudVisible(cfg.hud !== false);
@@ -255,7 +276,31 @@ function showPriceCard(item: unknown, price: { advice?: { findings: unknown[], r
   );
   priceWin.showInactive();
   if (priceTimer) clearTimeout(priceTimer);
-  priceTimer = setTimeout(() => priceWin?.hide(), 6000);
+  if (!pinned) priceTimer = setTimeout(() => priceWin?.hide(), 6000);
+}
+
+// First-run/setup notice: one toast listing anything that degrades features,
+// shown once per launch and only when something is actually missing.
+async function startupNotice() {
+  try {
+    const h = await (await fetch(`${API}/api/health`)).json();
+    const missing: string[] = [];
+    if (!h.trade?.poesessid) missing.push('POESESSID not set (⚙ Settings → Account) — rare-item pricing disabled');
+    if (!h.target) missing.push('No compare target build (panel → Library → 🎯) — advisor & shopping list limited');
+    if (!h.clientTxt) missing.push('Client.txt not found (⚙ Settings → Game) — live tracking off');
+    if (!missing.length || !priceWin) return;
+    const show = () => {
+      priceWin!.setSize(400, 88 + missing.length * 30);
+      priceWin!.webContents.send('notice', { title: 'Setup checklist', lines: missing });
+      const wa = screen.getPrimaryDisplay().workArea;
+      const [w, h2] = priceWin!.getSize();
+      priceWin!.setPosition(wa.x + wa.width - w - 16, wa.y + wa.height - h2 - 16);
+      priceWin!.showInactive();
+      priceTimer = setTimeout(() => priceWin?.hide(), 15000);
+    };
+    if (priceWin.webContents.isLoading()) priceWin.webContents.once('did-finish-load', show);
+    else show();
+  } catch { /* server not up — nothing to say */ }
 }
 
 // --- session HUD strip -----------------------------------------------------------
@@ -274,8 +319,12 @@ function positionHud() {
   if (!hudWin) return;
   const g = gameDipRect();
   if (!g) return;
-  const [w] = hudWin.getSize();
-  hudWin.setPosition(Math.round(g.x + (g.width - w) / 2), Math.round(g.y + 6));
+  const [w, h] = hudWin.getSize();
+  let x = g.x + (g.width - w) / 2, y = g.y + 6; // top-center default
+  if (cfg.hudPos === 'top-left') x = g.x + 16;
+  if (cfg.hudPos === 'top-right') x = g.x + g.width - w - 16;
+  if (cfg.hudPos === 'bottom-center') y = g.y + g.height - h - 6;
+  hudWin.setPosition(Math.round(x), Math.round(y));
 }
 
 function setHudVisible(on: boolean) {
@@ -337,6 +386,8 @@ function captureClipboard() {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ parsed }),
         })).json();
+        lastTradeUrl = price.tradeUrl || null;
+        pinned = false;
         showPriceCard(parsed, price);
         if (price.found) log(`price: ${price.price} ex (${price.name || parsed.name}) via ${price.source}`);
         else log(`unpriced: ${price.note || 'unknown'}`);
@@ -354,6 +405,18 @@ function startHotkeys() {
     if (!attached) return; // never react outside the game
     if (chordMatch(e, parseHotkey(cfg.hotkey))) setPanel(!panelOpen);
     if (chordMatch(e, parseHotkey(cfg.recsHotkey, 'Ctrl+Alt+U'))) void showRecs();
+    // Fixed chords: T = open the last trade search in the browser, P = pin the card.
+    if (e.ctrlKey && e.altKey && e.keycode === UiohookKey.T && lastTradeUrl) {
+      log(`opening trade search: ${lastTradeUrl}`);
+      void shell.openExternal(lastTradeUrl);
+    }
+    if (e.ctrlKey && e.altKey && e.keycode === UiohookKey.P && priceWin?.isVisible()) {
+      pinned = !pinned;
+      if (pinned && priceTimer) clearTimeout(priceTimer);
+      if (!pinned) { priceTimer = setTimeout(() => priceWin?.hide(), 3000); }
+      priceWin.webContents.send('pin', pinned);
+      log(`card ${pinned ? 'pinned' : 'unpinned'}`);
+    }
     if (e.ctrlKey && e.keycode === UiohookKey.C) captureClipboard();
   });
   uIOhook.start();
@@ -364,8 +427,9 @@ function startHotkeys() {
 function openSettings() {
   if (settingsWin) { settingsWin.show(); settingsWin.focus(); return; }
   settingsWin = new BrowserWindow({
-    width: 520, height: 700, title: 'PoE2 Overlay — Settings',
+    width: 520, height: 780, title: 'PoE2 Overlay — Settings',
     autoHideMenuBar: true, resizable: false,
+    icon: path.join(ROOT, 'assets', 'icon-256.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js') },
   });
   settingsWin.loadFile(path.join(ROOT, 'src', 'settings.html'));
@@ -438,8 +502,11 @@ app.whenReady().then(async () => {
   applyCfg();
 
   // Tray: the only always-visible handle on a frameless hidden overlay.
-  const icon = nativeImage.createFromDataURL(
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAKklEQVR4nGNgYPj/n4GBgYGJgYGBgYGB4T8DA8N/BgYGBgaG/wwMDAwMAF9uBP2/kkkSAAAAAElFTkSuQmCC');
+  const trayFile = path.join(ROOT, 'assets', 'tray-32.png');
+  const icon = fs.existsSync(trayFile)
+    ? nativeImage.createFromPath(trayFile)
+    : nativeImage.createFromDataURL(
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAKklEQVR4nGNgYPj/n4GBgYGJgYGBgYGB4T8DA8N/BgYGBgaG/wwMDAwMAF9uBP2/kkkSAAAAAElFTkSuQmCC');
   tray = new Tray(icon);
   tray.setToolTip('PoE2 Overlay');
   tray.setContextMenu(Menu.buildFromTemplate([
@@ -459,6 +526,7 @@ app.whenReady().then(async () => {
 
   startHotkeys();
   setInterval(poll, 500);
+  setTimeout(() => void startupNotice(), 4000);
   log(`watching for foreground window matching /${TARGET.source}/i`);
 });
 
