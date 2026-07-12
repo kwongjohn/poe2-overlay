@@ -1,0 +1,19 @@
+Item Class: Wands
+Rarity: Rare
+Doom Needle
+Bone Wand
+--------
+Requires: Level 56
+--------
+Item Level: 81
+--------
+Grants Skill: Level 18 Bone Blast
+--------
+{ Prefix Modifier "Glyphic" (Tier: 2) — Damage, Caster }
+94(90-104)% increased Spell Damage
+{ Prefix Modifier "Cerulean" (Tier: 7) — Mana }
++58(55-64) to maximum Mana
+{ Suffix Modifier "of Excitement" (Tier: 6) — Mana }
+14(10-19)% increased Mana Regeneration Rate
+{ Suffix Modifier "of Nimbleness" (Tier: 6) — Caster, Speed }
+14(13-16)% increased Cast Speed

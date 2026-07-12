@@ -1,0 +1,29 @@
+Item Class: Waystones
+Rarity: Rare
+Secluded Course
+Waystone (Tier 14)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +42% (augmented)
+Pack Size: +19% (augmented)
+Monster Rarity: +23% (augmented)
+Waystone Drop Chance: +110% (augmented)
+--------
+Item Level: 80
+--------
+{ Prefix Modifier "Penetrating" (Tier: 1) }
+Monster Damage Penetrates 12(12-14)% Elemental Resistances
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 14(10-15)% increased Attack, Cast and Movement Speed
+{ Prefix Modifier "Tough" (Tier: 1) }
+23(20-25)% more Monster Life
+{ Suffix Modifier "Sleet" (Tier: 1) }
+Area has patches of Chilled Ground
+{ Suffix Modifier "of Exposure" (Tier: 1) }
+-6(-8--6)% maximum Player Resistances
+{ Suffix Modifier "of the Prism" (Tier: 1) }
++33(30-34)% Monster Elemental Resistances
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+--------
+Corrupted

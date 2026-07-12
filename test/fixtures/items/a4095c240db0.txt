@@ -1,0 +1,25 @@
+Item Class: Crossbows
+Rarity: Rare
+Oblivion Core
+Trarthan Cannon
+--------
+Physical Damage: 61-140 (augmented)
+Lightning Damage: 3-43 (lightning)
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.40
+--------
+Requires: Level 65, 114 (unmet) Str, 63 Dex
+--------
+Item Level: 79
+--------
+{ Implicit Modifier }
+Cannot load or fire Ammunition — Unscalable Value
+--------
+{ Prefix Modifier "Snapping" (Tier: 8) — Damage, Elemental, Lightning, Attack }
+Adds 3(1-3) to 43(31-43) Lightning Damage
+{ Prefix Modifier "Glinting" (Tier: 9) — Damage, Physical, Attack }
+Adds 3(2-3) to 6(5-7) Physical Damage
+{ Suffix Modifier "of Success" (Tier: 8) — Life }
+Gain 6(4-6) Life per enemy killed
+{ Suffix Modifier "of Anger" (Tier: 5) — Damage, Attack, Critical }
++12(12-13)% to Critical Damage Bonus

@@ -1,0 +1,14 @@
+Item Class: Waystones
+Rarity: Magic
+Impacting Waystone (Tier 15)
+--------
+Revives Available: 5
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +15% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Impacting" (Tier: 1) }
+Monsters have 96(90-100)% increased Stun Buildup
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

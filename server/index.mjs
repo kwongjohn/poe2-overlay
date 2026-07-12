@@ -1318,6 +1318,10 @@ const server = http.createServer(async (req, res) => {
         if (body.overlay && typeof body.overlay === 'object' && !Array.isArray(body.overlay)) {
           settings.overlay = { ...(settings.overlay || {}), ...body.overlay };
         }
+        // Pick-advisor overrides ({tags: []} forces archetypes; empty/absent = derive from build).
+        if (body.advisor && typeof body.advisor === 'object' && !Array.isArray(body.advisor)) {
+          settings.advisor = { ...(settings.advisor || {}), ...body.advisor };
+        }
         await saveSettings(settings);
         return send(res, 200, { ...settings, poesessid: settings.poesessid ? '(set)' : '' });
       }

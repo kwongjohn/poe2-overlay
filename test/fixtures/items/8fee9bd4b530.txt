@@ -1,0 +1,28 @@
+Item Class: Waystones
+Rarity: Rare
+Warped Charge
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +13% (augmented)
+Pack Size: +13% (augmented)
+Monster Rarity: +37% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +80% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Impacting" (Tier: 1) }
+Monsters have 96(90-100)% increased Stun Buildup
+{ Prefix Modifier "Venomous" (Tier: 1) }
+Monsters have 29(27-33)% chance to Poison on Hit
+{ Prefix Modifier "Shattering" (Tier: 1) }
+Monsters Break Armour equal to 25(25-30)% of Physical Damage dealt
+{ Suffix Modifier "of Evasion" (Tier: 1) }
+Monsters are Evasive
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 13(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

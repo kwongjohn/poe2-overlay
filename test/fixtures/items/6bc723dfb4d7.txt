@@ -1,0 +1,15 @@
+Item Class: Shields
+Rarity: Rare
+Vaal Crest Shield
+--------
+Block chance: 25%
+Armour: 134
+Energy Shield: 37
+--------
+Requires: 59 (unmet) Str, 59 Int
+--------
+Item Level: 79
+--------
+Grants Skill: Raise Shield
+--------
+Unidentified (Tier 2)

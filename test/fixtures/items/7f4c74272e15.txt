@@ -1,0 +1,14 @@
+Item Class: Waystones
+Rarity: Magic
+Waystone (Tier 15) of Obstruction
+--------
+Revives Available: 5
+Monster Rarity: +18% (augmented)
+Waystone Drop Chance: +10% (augmented)
+--------
+Item Level: 81
+--------
+{ Suffix Modifier "of Obstruction" (Tier: 1) }
+Monsters take 29(26-30)% reduced Extra Damage from Critical Hits
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

@@ -1,0 +1,14 @@
+Item Class: Waystones
+Rarity: Magic
+Fleeting Waystone (Tier 15)
+--------
+Revives Available: 5
+Pack Size: +9% (augmented)
+Waystone Drop Chance: +25% (augmented)
+--------
+Item Level: 80
+--------
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 14(10-15)% increased Attack, Cast and Movement Speed
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
