@@ -1066,7 +1066,9 @@ async function tradeFetch(u, opts = {}) {
   // Serialize and space all trade calls (simple governor: >=1.5s apart, plus any
   // server-mandated cooldown), so bursts can never exceed the advertised budget.
   const myTurn = tradeChain.then(async () => {
-    const wait = Math.max(tradeLastAt + 1500 - Date.now(), tradeCooldownUntil - Date.now(), 0);
+    // 2.5s spacing: GGG budgets are tiered (per-10s AND per-60s+); 1.5s passed
+    // the burst tier but tripped the sustained one on long background passes.
+    const wait = Math.max(tradeLastAt + 2500 - Date.now(), tradeCooldownUntil - Date.now(), 0);
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
     tradeLastAt = Date.now();
   });
@@ -1076,6 +1078,10 @@ async function tradeFetch(u, opts = {}) {
   if (r.status === 429) {
     const ra = Number(r.headers.get('retry-after') || 15);
     tradeCooldownUntil = Date.now() + ra * 1000;
+    if (opts.retryOn429) {
+      await new Promise((rr) => setTimeout(rr, ra * 1000 + 500));
+      return tradeFetch(u, { ...opts, retryOn429: false });
+    }
     throw new Error(`rate-limited by trade API (retry in ${ra}s)`);
   }
   if (!r.ok) throw new Error(`trade API ${r.status}`);
@@ -1105,7 +1111,7 @@ async function ensureTradeStats() {
   return tradeStats;
 }
 
-function tradeStatFilters(stats, modLines) {
+function tradeStatFilters(stats, modLines, headroom = 0.9) {
   const filters = [];
   const unmatched = [];
   for (const line of modLines) {
@@ -1113,9 +1119,9 @@ function tradeStatFilters(stats, modLines) {
     const hit = stats.map.find((s) => s.type === 'explicit' && s.template === tpl);
     if (!hit) { unmatched.push(line); continue; }
     const num = /[\d.]+/.exec(line);
-    // 10% headroom below the item's roll so near-equivalents count as comparables.
+    // Headroom below the item's roll so near-equivalents count as comparables.
     filters.push(num
-      ? { id: hit.id, value: { min: Math.floor(Number(num[0]) * 0.9) } }
+      ? { id: hit.id, value: { min: Math.floor(Number(num[0]) * headroom) } }
       : { id: hit.id });
   }
   return { filters, unmatched };
@@ -1130,37 +1136,46 @@ function currencyToEx(s, apiId) {
   return hit && hit.CurrentPrice > 0 ? hit.CurrentPrice : null;
 }
 
-async function tradePrice(parsed, scoutState) {
+async function tradePrice(parsed, scoutState, opts = {}) {
+  const { headroom = 0.9, retryOn429 = false } = opts;
   const stats = await ensureTradeStats();
-  const { filters, unmatched } = tradeStatFilters(stats, parsed.explicits || []);
+  const { filters, unmatched } = tradeStatFilters(stats, parsed.explicits || [], headroom);
   if (!filters.length) return { found: false, note: 'no mods matched the trade stat catalogue' };
-  const query = {
-    query: {
-      status: { option: 'online' },
-      ...(parsed.baseType ? { type: parsed.baseType } : {}),
-      stats: [{ type: 'and', filters }],
-    },
-    sort: { price: 'asc' },
-  };
   const league = encodeURIComponent(scoutState.league || 'Standard');
-  let search;
-  try {
-    search = await tradeFetch(`${TRADE}/search/poe2/${league}`, {
-      method: 'POST', body: JSON.stringify(query),
-    });
-  } catch (e) {
-    // Parser base names can drift from GGG's catalogue ("Unknown item base type",
-    // a 400) — mods alone still give a usable comparable search.
-    if (!query.query.type || !/400/.test(String(e.message))) throw e;
-    delete query.query.type;
-    search = await tradeFetch(`${TRADE}/search/poe2/${league}`, {
-      method: 'POST', body: JSON.stringify(query),
-    });
+
+  const doSearch = async (fl, withType) => {
+    const query = {
+      query: {
+        status: { option: 'online' },
+        ...(withType && parsed.baseType ? { type: parsed.baseType } : {}),
+        stats: [{ type: 'and', filters: fl }],
+      },
+      sort: { price: 'asc' },
+    };
+    try {
+      return await tradeFetch(`${TRADE}/search/poe2/${league}`, {
+        method: 'POST', body: JSON.stringify(query), retryOn429,
+      });
+    } catch (e) {
+      // Parser base names can drift from GGG's catalogue ("Unknown item base
+      // type", a 400) — mods alone still give a usable comparable search.
+      if (!withType || !/400/.test(String(e.message))) throw e;
+      return doSearch(fl, false);
+    }
+  };
+
+  let search = await doSearch(filters, true);
+  let relaxed = false;
+  if ((!search.result || !search.result.length) && filters.length > 3) {
+    // Aspirational rolls (guide gear) often match nothing as a full set —
+    // comparables on the 3 headline mods still give a useful floor price.
+    search = await doSearch(filters.slice(0, 3), true);
+    relaxed = true;
   }
   if (!search.result || !search.result.length) {
     return { found: false, note: 'no online listings match these mods', total: search.total || 0, unmatched };
   }
-  const fetched = await tradeFetch(`${TRADE}/fetch/${search.result.slice(0, 10).join(',')}?query=${search.id}`);
+  const fetched = await tradeFetch(`${TRADE}/fetch/${search.result.slice(0, 10).join(',')}?query=${search.id}`, { retryOn429 });
   const exPrices = (fetched.result || [])
     .map((x) => x && x.listing && x.listing.price)
     .filter((p) => p && p.amount > 0)
@@ -1169,13 +1184,81 @@ async function tradePrice(parsed, scoutState) {
     .sort((a, b) => a - b);
   if (!exPrices.length) return { found: false, note: 'listings found but in unknown currencies', total: search.total };
   return {
-    found: true, source: 'trade (online, cheapest first)', league: scoutState.league,
+    found: true, relaxed,
+    source: `trade (online, cheapest first${relaxed ? ', top-3 mods' : ''})`,
+    league: scoutState.league,
     currency: 'ex', total: search.total,
     price: exPrices[0], // "from" price
     median: exPrices[Math.floor(exPrices.length / 2)],
     divine: scoutState.divinePrice ? exPrices[0] / scoutState.divinePrice : null,
     sampled: exPrices.length, unmatched,
   };
+}
+
+// Recommendations: the priced "shopping list" — every gear piece in the target
+// build, priced (uniques via poe2scout, rares via a relaxed trade search at 70%
+// headroom = comparables, not exact copies), with pieces already captured via
+// Ctrl+C marked owned. Computed in the background (trade governor makes a full
+// pass take ~1 min), served instantly from cache.
+let recsState = { computedAt: 0, computing: false, items: [], note: 'not computed yet' };
+
+function parseBuildGear(slot) {
+  const text = slot.additional_text || '';
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (!lines.length) return null;
+  // Some guide slots carry prose, not an item — the intended unique is usually
+  // marked up as <b>{Name}; price that by name instead.
+  if (lines[0].length > 60 || lines[0].includes('<b>{')) {
+    const m = /<b>\{([^}]+)\}/.exec(text);
+    return m ? { slot: slot.inventory_id, name: m[1], mods: [], guideNote: true } : null;
+  }
+  return {
+    slot: slot.inventory_id, name: lines[0],
+    mods: lines.slice(1).map((l) => l.replace(/^\d+\.\s*/, '')),
+  };
+}
+
+async function computeRecommendations() {
+  if (recsState.computing) return;
+  recsState = { ...recsState, computing: true };
+  try {
+    const s = await ensureScout();
+    const t = await loadTargetBuild();
+    if (!t.exported) {
+      recsState = { computedAt: Date.now(), computing: false, items: [], note: 'no target build set' };
+      return;
+    }
+    const owned = loadCurrentItems().items;
+    const ownedNames = new Set(owned.flatMap((i) => [i.name, i.baseType].filter(Boolean).map((x) => x.toLowerCase())));
+    const items = [];
+    for (const slotData of t.d.inventory_slots || []) {
+      const it = parseBuildGear(slotData);
+      if (!it) continue;
+      const isOwned = ownedNames.has(it.name.toLowerCase());
+      let ex = null, source = null, note = null;
+      const hit = findScoutItem(s, it.name, '');
+      if (hit && hit.CurrentPrice > 0) {
+        ex = hit.CurrentPrice; source = 'poe2scout';
+      } else if (!isOwned && it.mods.length) {
+        try {
+          const tp = await tradePrice({ baseType: it.name, explicits: it.mods, rarity: 'Rare' }, s, { headroom: 0.7, retryOn429: true });
+          if (tp.found) { ex = tp.price; source = `trade · ${tp.total} online`; }
+          else note = tp.note;
+        } catch (e) { note = String((e && e.message) || e); }
+      }
+      items.push({
+        slot: it.slot, name: it.name, owned: isOwned, ex, source, note,
+        divine: ex && s.divinePrice ? ex / s.divinePrice : null,
+      });
+    }
+    // Unowned first, cheapest first; unpriceable at the end.
+    items.sort((a, b) => (a.owned ? 1 : 0) - (b.owned ? 1 : 0) || ((a.ex ?? 1e12) - (b.ex ?? 1e12)));
+    recsState = { computedAt: Date.now(), computing: false, items, note: null, league: s.league };
+    console.log(`[recs] priced ${items.length} target gear pieces (${items.filter((i) => i.ex).length} with prices)`);
+  } catch (e) {
+    recsState = { ...recsState, computing: false, note: String((e && e.message) || e) };
+    console.log(`[recs] failed: ${recsState.note}`);
+  }
 }
 
 // Pick advisor: score a captured waystone/tablet against the *target build*,
@@ -1338,6 +1421,12 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && p === '/api/current/items') {
       return send(res, 200, loadCurrentItems());
+    }
+
+    // Priced target-gear shopping list (cached; background-refreshed).
+    if (req.method === 'GET' && p === '/api/recommendations') {
+      if (!recsState.computedAt && !recsState.computing) void computeRecommendations();
+      return send(res, 200, recsState);
     }
 
     // Price check. GET (name/base/rarity params) = poe2scout list lookup only.
@@ -1580,4 +1669,7 @@ server.listen(PORT, '127.0.0.1', () => {
     console.log('[poe2-build-tracker] note: BuildPlanner dir does not exist yet; it will be created on first export.');
   }
   void startWatch(settings.clientTxtPath);
+  // Price the target-gear shopping list in the background; refresh with prices.
+  setTimeout(() => void computeRecommendations(), 30 * 1000);
+  setInterval(() => void computeRecommendations(), 15 * 60 * 1000);
 });

@@ -4,6 +4,24 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-12 — Phase 5 (Recommendations v2: priced upgrade shopping list)
+
+### Added
+- **Upgrade shopping list** (`Ctrl+Alt+U` in game, or tray): every gear piece in
+  the target build, priced — uniques via poe2scout (incl. names extracted from
+  guide-prose slots' `<b>{...}` markup), rares via a relaxed trade search (70%
+  roll headroom; falls back to the top-3 mods when the full aspirational set
+  matches nothing, labeled as such). Pieces already captured with Ctrl+C show ✓
+  owned. Sorted unowned-cheapest-first. Computed in the background 30 s after
+  launch and every 15 min (`GET /api/recommendations` serves the cache
+  instantly); real run: 7/13 pieces priced, e.g. Darkness Enthroned 1 ex,
+  Chiming Staff 2 ex, Leyline Focus 5 ex.
+
+### Fixed
+- Trade governor spacing 1.5 s → 2.5 s (the sustained per-60s budget tier
+  tripped on long background passes), plus optional wait-and-retry-once on 429
+  for background jobs (interactive price checks still fail fast).
+
 ## 2026-07-10 (late) — Phase 4b (session HUD strip)
 
 ### Added

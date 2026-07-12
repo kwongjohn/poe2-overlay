@@ -25,16 +25,47 @@
 </style>
 </head>
 <body>
-<div class="card">
+<div class="card" id="pricecard">
   <div class="name" id="name"></div>
   <div class="base" id="base"></div>
   <div id="priceline"></div>
   <div id="advice" style="display:none"></div>
   <div class="src" id="src"></div>
 </div>
+<div class="card" id="recscard" style="display:none">
+  <div class="name" style="color:#5eead4">Upgrade shopping list</div>
+  <div id="recrows"></div>
+  <div class="src" id="recsrc"></div>
+</div>
 <script>
   const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const fmtEx = v => v >= 100 ? Math.round(v) : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+
+  window.overlay.onRecs(d => {
+    $('pricecard').style.display = 'none';
+    $('recscard').style.display = 'block';
+    if (!d.items || !d.items.length) {
+      $('recrows').innerHTML = `<div class="none">${esc(d.note || (d.computing ? 'computing prices…' : 'nothing to show'))}</div>`;
+      $('recsrc').textContent = '';
+      return;
+    }
+    let html = '';
+    for (const it of d.items.slice(0, 10)) {
+      const price = it.ex != null
+        ? `<span style="color:#5eead4">${fmtEx(it.ex)} ex</span>${it.divine >= 0.05 ? ` <span class="div">(${it.divine.toFixed(1)}d)</span>` : ''}`
+        : `<span class="none" style="font-size:10px">${esc(it.note || 'unpriced')}</span>`;
+      html += `<div class="find" style="${it.owned ? 'opacity:.45' : ''}">`
+        + `${it.owned ? '✓ ' : ''}<span class="base">${esc(it.slot)}</span> ${esc(it.name)} — ${price}</div>`;
+    }
+    $('recrows').innerHTML = html;
+    const age = d.computedAt ? Math.round((Date.now() - d.computedAt) / 60000) : null;
+    $('recsrc').textContent = `unowned first, cheapest first · ${d.league || ''}${age != null ? ` · priced ${age}m ago` : ''}${d.computing ? ' · refreshing…' : ''}`;
+  });
+
   window.overlay.onPrice(d => {
+    $('recscard').style.display = 'none';
+    $('pricecard').style.display = 'block';
     $('name').textContent = d.item.name || d.item.baseType || '?';
     $('name').className = 'name ' + (d.item.rarity || '');
     $('base').textContent = d.item.baseType && d.item.name !== d.item.baseType ? d.item.baseType : '';

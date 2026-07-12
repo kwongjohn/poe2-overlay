@@ -268,6 +268,32 @@ function setHudVisible(on: boolean) {
   if (on) { positionHud(); hudWin.showInactive(); } else hudWin.hide();
 }
 
+// --- recommendations card (priced target-gear shopping list) --------------------
+async function showRecs() {
+  if (!priceWin) return;
+  if (priceWin.webContents.isLoading()) {
+    priceWin.webContents.once('did-finish-load', () => showRecs());
+    return;
+  }
+  let recs: { items?: unknown[] } = {};
+  try {
+    recs = await (await fetch(`${API}/api/recommendations`)).json();
+  } catch (e) { log(`recs fetch failed: ${e}`); return; }
+  const rows = Math.min((recs.items || []).length, 10);
+  priceWin.setSize(380, Math.min(96 + rows * 17, 300));
+  priceWin.webContents.send('recs', recs);
+  const cur = screen.getCursorScreenPoint();
+  const wa = screen.getDisplayNearestPoint(cur).workArea;
+  const [w, h] = priceWin.getSize();
+  priceWin.setPosition(
+    Math.min(cur.x + 24, wa.x + wa.width - w - 8),
+    Math.min(cur.y + 24, wa.y + wa.height - h - 8),
+  );
+  priceWin.showInactive();
+  if (priceTimer) clearTimeout(priceTimer);
+  priceTimer = setTimeout(() => priceWin?.hide(), 12000);
+}
+
 // --- clipboard capture (user-pressed Ctrl+C only) ------------------------------
 function captureClipboard() {
   setTimeout(async () => {
@@ -312,10 +338,11 @@ function startHotkeys() {
     if (e.ctrlKey === hk.ctrl && e.altKey === hk.alt && e.keycode === hk.keycode) {
       setPanel(!panelOpen);
     }
+    if (e.ctrlKey && e.altKey && e.keycode === UiohookKey.U) void showRecs();
     if (e.ctrlKey && e.keycode === UiohookKey.C) captureClipboard();
   });
   uIOhook.start();
-  log(`hotkeys active (while attached): ${cfg.hotkey} = toggle panel, Ctrl+C = capture item`);
+  log(`hotkeys active (while attached): ${cfg.hotkey} = toggle panel, Ctrl+C = capture item, Ctrl+Alt+U = upgrade list`);
 }
 
 // --- IPC from the chrome bar ---------------------------------------------------
@@ -378,6 +405,7 @@ app.whenReady().then(async () => {
   tray.setToolTip('PoE2 Overlay');
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Toggle panel', click: () => setPanel(!panelOpen) },
+    { label: 'Upgrade shopping list (Ctrl+Alt+U)', click: () => void showRecs() },
     {
       label: 'Toggle session HUD',
       click: () => {
