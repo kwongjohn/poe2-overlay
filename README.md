@@ -18,10 +18,13 @@ Public repo: github.com/kwongjohn/poe2-overlay — commit + update CHANGELOG.md 
 session. **Pick advisor done (2026-07-10 evening):** waystones/tablets score against the target
 build (auto-derived archetype tags, per-archetype mod rules, GOOD/CAUTION/RISKY/SKIP +
 rewards) — verified RISKY on a real T14 with curse-gutting + recovery-crippling mods.
-Rune/OCR module deferred (RuneshapePriceChecker covers runes this league). **Next
-candidates:** session HUD strip (level/zone/deaths/pace off existing endpoints),
-leveling hints widget, or Recommendations v2 ("cheapest upgrade" = compare diff ×
-trade prices). Still pending: GGG OAuth reply (follow up ~Jul 25). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
+Session HUD (top-center strip, tray-toggleable) and **Recommendations v2** done
+2026-07-12: `Ctrl+Alt+U` → priced target-gear shopping list (poe2scout + relaxed trade
+search, ✓ owned from captures, background-refreshed every 15 min). Rune/OCR module
+deferred (RuneshapePriceChecker covers runes this league). **Next candidates:** Phase 6
+ship-quality (installer + auto-update — do before sharing the repo), leveling hints
+widget (next league start), OCR (Phase 5). Still pending: GGG OAuth reply (follow up
+~Jul 25). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
 `CHANGELOG.md` (update it every session) · roadmap/boundary: `PLAN.md` (§4b) ·
 external deps: `EXTERNAL-REQUIREMENTS.md` · secrets: `CREDENTIALS.local.md`
 (gitignored). Known constraints: don't run the old tracker's server simultaneously
