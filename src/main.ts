@@ -42,6 +42,7 @@ const GetWindowTextW = user32.func('GetWindowTextW', 'int', ['void *', 'char16_t
 const RECT = koffi.struct('RECT', { left: 'long', top: 'long', right: 'long', bottom: 'long' });
 const GetWindowRect = user32.func('GetWindowRect', 'bool', ['void *', koffi.out(koffi.pointer(RECT))]);
 const FindWindowW = user32.func('FindWindowW', 'void *', ['char16_t *', 'char16_t *']);
+const GetClassNameW = user32.func('GetClassNameW', 'int', ['void *', 'char16_t *', 'int']);
 
 function windowTitle(hwnd: unknown): string {
   const buf = Buffer.alloc(512);
@@ -49,10 +50,24 @@ function windowTitle(hwnd: unknown): string {
   return len > 0 ? buf.toString('utf16le', 0, len * 2) : '';
 }
 
+function windowClass(hwnd: unknown): string {
+  const buf = Buffer.alloc(512);
+  const len = GetClassNameW(hwnd, buf, 255);
+  return len > 0 ? buf.toString('utf16le', 0, len * 2) : '';
+}
+
+// The game's window class (verified live 2026-07-12: PathOfExileSteam.exe,
+// class POEWindowClass). Title alone is spoofable by browser tabs / Explorer
+// folders named after the game — that re-attached the HUD over other apps.
+const GAME_CLASS = 'POEWindowClass';
+function isGameWindow(hwnd: unknown, title: string): boolean {
+  if (!TARGET.test(title)) return false;
+  return targetArg ? true : windowClass(hwnd) === GAME_CLASS;
+}
+
 // --- config / state ----------------------------------------------------------
 const targetArg = process.argv.find(a => a.startsWith('--target='))?.slice(9);
 let TARGET = new RegExp(targetArg ?? 'Path of Exile 2', 'i');
-let TARGET_EXACT: string | null = targetArg ? null : 'Path of Exile 2'; // for FindWindowW when hidden
 
 type OverlaySettings = {
   opacity: number; size: string; corner: string; hotkey: string; recsHotkey: string;
@@ -140,10 +155,7 @@ function persistCfg() {
 function applyCfg() {
   if (!win) return;
   // The CLI --target flag (spike/testing) wins over the setting.
-  if (!targetArg && cfg.target) {
-    TARGET = new RegExp(cfg.target, 'i');
-    TARGET_EXACT = cfg.target;
-  }
+  if (!targetArg && cfg.target) TARGET = new RegExp(cfg.target, 'i');
   win.setOpacity(cfg.opacity);
   app.setLoginItemSettings({
     openAtLogin: !!cfg.startWithWindows,
@@ -174,10 +186,11 @@ function layoutView() {
 }
 
 function gameDipRect(): { x: number; y: number; width: number; height: number } | null {
-  // Prefer the foreground window if it's the game; else find the game window by title.
+  // Prefer the foreground window if it's the game; else find the game window
+  // by class (or by exact title in --target test mode).
   let hwnd = GetForegroundWindow();
-  if (!hwnd || !TARGET.test(windowTitle(hwnd))) {
-    hwnd = TARGET_EXACT ? FindWindowW(null, TARGET_EXACT) : null;
+  if (!hwnd || !isGameWindow(hwnd, windowTitle(hwnd))) {
+    hwnd = targetArg ? FindWindowW(null, targetArg) : FindWindowW(GAME_CLASS, null);
     if (!hwnd) return null;
   }
   const r = {} as { left: number; top: number; right: number; bottom: number };
@@ -219,10 +232,11 @@ function poll() {
   if (!hwnd) return;
   if (koffi.address(hwnd) === ownHwnd) return; // interacting with our panel
 
-  const isGame = TARGET.test(windowTitle(hwnd));
+  const isGame = isGameWindow(hwnd, windowTitle(hwnd));
   // Quit-with-the-game: once we've seen the game, if its window is gone
   // (not just unfocused) for >2 min and the option is on, exit.
-  const gameExists = isGame || !!(TARGET_EXACT && FindWindowW(null, TARGET_EXACT));
+  const gameExists = isGame
+    || !!(targetArg ? FindWindowW(null, targetArg) : FindWindowW(GAME_CLASS, null));
   if (gameExists) { lastGameSeen = Date.now(); everSawGame = true; }
   else if (cfg.quitOnGameExit && everSawGame && Date.now() - lastGameSeen > 120000) {
     log('game closed >2 min and quitOnGameExit is on — exiting');
@@ -246,6 +260,11 @@ function poll() {
     setHudVisible(false);
     log('game detached');
     sendStatus();
+  }
+  // Self-heal: whatever the cause, a visible HUD while detached is wrong.
+  if (!isGame && !attached && hudWin?.isVisible()) {
+    hudWin.hide();
+    log('hud self-heal: hidden while detached');
   }
 }
 
@@ -466,8 +485,9 @@ ipcMain.on('overlay:settingsSaved', async () => {
 
 // --- app -----------------------------------------------------------------------
 // Two overlays fighting over one game window (double-clicked launcher) is
-// confusing — the second instance just exits.
-if (!app.requestSingleInstanceLock()) app.quit();
+// confusing — the second instance exits HARD (app.quit() is async and can let
+// whenReady create windows before the quit lands).
+if (!app.requestSingleInstanceLock()) app.exit(0);
 
 app.whenReady().then(async () => {
   startServer();

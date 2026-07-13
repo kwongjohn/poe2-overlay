@@ -4,6 +4,22 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-13 — Fix: HUD lingering over other apps (window matching hardened)
+
+### Fixed
+- **Session HUD could overlay other apps**: the game was matched by window
+  *title substring* only, so anything titled like the game (browser tabs about
+  PoE2, an Explorer window in the game's folder) re-attached the overlay while
+  alt-tabbed. The game is now identified by its real window **class**
+  (`POEWindowClass`, verified live from `PathOfExileSteam.exe`) plus the title;
+  `--target` test mode keeps title-only matching.
+- Self-heal guard: a visible HUD while detached is force-hidden every poll tick
+  (and logged), so no state desync can pin it again.
+- Second overlay instance now exits **hard** (`app.exit`) — `app.quit()` is
+  async and could let the duplicate create windows before dying.
+- Note: PoE Overlay II's host processes were found running alongside ours —
+  if a ghost overlay survives killing our process, check theirs.
+
 ## 2026-07-12 (late night) — Hotfix: every button dead (sandboxed preload)
 
 ### Fixed
