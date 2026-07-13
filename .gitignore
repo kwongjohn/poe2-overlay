@@ -16,4 +16,5 @@ items.jsonl
 node_modules/
 dist/
 out/
+release/
 *.tsbuildinfo

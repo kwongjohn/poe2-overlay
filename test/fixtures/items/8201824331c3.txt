@@ -1,0 +1,11 @@
+Item Class: Omen
+Rarity: Currency
+Omen of Chaotic Quantity
+--------
+Stack Size: 1/10
+--------
+While this item is active in your inventory your next
+Chaos Orb will replace all Modifiers on a Waystone
+with Modifiers that do not grant Pack Size
+--------
+Right click this item in your inventory to set it to be active. This item is consumed when triggered.

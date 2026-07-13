@@ -3,20 +3,86 @@
   "version": "0.1.0",
   "private": true,
   "description": "All-in-one in-game overlay companion for Path of Exile 2 (unofficial fan tool)",
+  "author": "John Chris Kwong",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
     "start": "tsc && electron .",
     "spike:notepad": "tsc && electron . --target=Notepad",
-    "test": "tsc && node --test \"dist/**/*.test.js\""
+    "test": "tsc && node --test \"dist/**/*.test.js\"",
+    "dist": "tsc && electron-builder --win --publish never"
+  },
+  "build": {
+    "appId": "com.kwongjohn.poe2overlay",
+    "productName": "PoE2 Overlay",
+    "directories": {
+      "output": "release",
+      "app": "."
+    },
+    "npmRebuild": false,
+    "files": [
+      "dist/**",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/koffi/**",
+      "node_modules/uiohook-napi/**"
+    ],
+    "extraResources": [
+      {
+        "from": "server",
+        "to": "server"
+      },
+      {
+        "from": "app/dist",
+        "to": "app/dist"
+      },
+      {
+        "from": "app/Skill Trees",
+        "to": "app/Skill Trees"
+      },
+      {
+        "from": "app/public/data",
+        "to": "app/public/data"
+      },
+      {
+        "from": "src",
+        "to": "src",
+        "filter": [
+          "**/*.html"
+        ]
+      },
+      {
+        "from": "assets",
+        "to": "assets"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "kwongjohn",
+      "repo": "poe2-overlay"
+    }
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "koffi": "^2.9.0",
     "uiohook-napi": "^1.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "electron": "^33.0.0",
+    "electron-builder": "^26.15.3",
     "typescript": "^5.5.0"
   }
 }

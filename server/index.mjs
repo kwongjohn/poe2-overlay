@@ -13,7 +13,13 @@ import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '..');
+// CODE_ROOT = read-only app files beside this script (game data, built UI).
+// ROOT = writable state (builds, settings, logs, caches). They're the same in
+// dev; the packaged app runs from Program Files (read-only) and points state
+// at %APPDATA% via POE2_STATE_DIR.
+const CODE_ROOT = path.resolve(__dirname, '..');
+const ROOT = process.env.POE2_STATE_DIR || CODE_ROOT;
+if (ROOT !== CODE_ROOT) fs.mkdirSync(ROOT, { recursive: true });
 const BUILDS_DIR = path.join(ROOT, 'builds');
 const SETTINGS_FILE = path.join(ROOT, 'settings.json');
 const MANIFEST_FILE = path.join(ROOT, '.export-manifest.json');
@@ -376,7 +382,7 @@ function treeNodeMap() {
   if (_treeMap) return _treeMap;
   _treeMap = new Map();
   try {
-    const d = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'Skill Trees', '0.5.2', 'data.json'), 'utf8'));
+    const d = JSON.parse(fs.readFileSync(path.join(CODE_ROOT, 'app', 'Skill Trees', '0.5.2', 'data.json'), 'utf8'));
     for (const [k, n] of Object.entries(d.nodes || {})) {
       if (n && n.id) _treeMap.set(Number(n.skill ?? k), n.id);
     }
@@ -387,7 +393,7 @@ function gemNameMap() {
   if (_gemMap) return _gemMap;
   _gemMap = new Map();
   try {
-    const g = JSON.parse(fs.readFileSync(path.join(ROOT, 'app', 'public', 'data', 'poe2', 'skill_gems.json'), 'utf8'));
+    const g = JSON.parse(fs.readFileSync(path.join(CODE_ROOT, 'app', 'public', 'data', 'poe2', 'skill_gems.json'), 'utf8'));
     for (const [id, v] of Object.entries(g)) {
       for (const nm of [v.base_item?.display_name, v.skill_name, v.support_name]) {
         if (nm) _gemMap.set(String(nm).toLowerCase(), id);
@@ -1338,7 +1344,7 @@ function adviseMapItem(parsed, tags) {
 
 // Static hosting of the built app (app/dist) so the Electron overlay loads the UI
 // from this server (same origin as /api) with no Vite dev process.
-const APP_DIST = path.join(ROOT, 'app', 'dist');
+const APP_DIST = path.join(CODE_ROOT, 'app', 'dist');
 const MIME = {
   '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg',

@@ -1,0 +1,26 @@
+Item Class: Charms
+Rarity: Unique
+Arakaali's Gift
+Antidote Charm
+--------
+Lasts 3 Seconds
+Consumes 20 of 40 Charges on use
+Currently has 0 Charges
+Grants Immunity to Poison
+--------
+Requires: Level 24
+--------
+Item Level: 79
+--------
+{ Implicit Modifier }
+Used when you become Poisoned — Unscalable Value
+--------
+{ Unique Modifier — Charm, Life }
+Recover Life equal to 18(15-20)% of Mana Flask's Recovery Amount when used
+{ Unique Modifier — Charm, Mana }
+Recover Mana equal to 15(15-20)% of Life Flask's Recovery Amount when used
+--------
+Devotees of the Goddess of Lust
+needed never fear her sting.
+--------
+Used automatically when condition is met. Can only hold charges while in belt. Refill at Wells or by killing monsters.

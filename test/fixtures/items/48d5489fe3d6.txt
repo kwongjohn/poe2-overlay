@@ -1,0 +1,27 @@
+Item Class: Waystones
+Rarity: Rare
+Hate Trajectory
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +42% (augmented)
+Pack Size: +9% (augmented)
+Monster Rarity: +43% (augmented)
+Waystone Drop Chance: +105% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Painful" (Tier: 1) }
+17(15-19)% increased Monster Damage
+{ Prefix Modifier "Frostbitten" (Tier: 1) }
+Monsters deal 15(15-19)% of Damage as Extra Cold
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 15(10-15)% increased Attack, Cast and Movement Speed
+{ Suffix Modifier "of Smothering" (Tier: 1) }
+Players have 40(40-36)% less Recovery Rate of Life and Energy Shield
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 13(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "of Obstruction" (Tier: 1) }
+Monsters take 30(26-30)% reduced Extra Damage from Critical Hits
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

@@ -4,6 +4,21 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-13 — Phase 6 (ship quality: installer, portable exe, auto-update)
+
+### Added
+- **electron-builder packaging** (`npm run dist`): one-click NSIS installer +
+  portable exe under `release/`, app icon from `assets/icon.ico` (PNG-wrapped
+  256px, `scripts/make-ico.mjs`), native modules (koffi, uiohook) asar-unpacked,
+  read-only app files as extraResources.
+- **Code/state split for installed builds**: the companion server now separates
+  CODE_ROOT (read-only: built UI, tree/gem data) from ROOT (writable state:
+  builds, settings, corpus, caches) via `POE2_STATE_DIR`; packaged builds keep
+  state in `%APPDATA%/PoE2 Overlay`, dev keeps everything in the project root.
+- **Auto-update** via electron-updater + GitHub Releases (packaged builds only).
+- Settings' Steam launch line now points at the installed exe when packaged
+  (vbs launcher in dev).
+
 ## 2026-07-13 — Fix: HUD lingering over other apps (window matching hardened)
 
 ### Fixed

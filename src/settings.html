@@ -95,7 +95,10 @@
   }
   $('opacity').oninput = e => $('opv').textContent = e.target.value + '%';
 
-  const steamLine = `cmd /c start "" wscript.exe "${window.overlay.rootPath}\\PoE2 Overlay.vbs" & %command%`;
+  const rp = window.overlay.rootPath; // { root, exe, packaged }
+  const steamLine = rp.packaged
+    ? `cmd /c start "" "${rp.exe}" & %command%`
+    : `cmd /c start "" wscript.exe "${rp.root}\\PoE2 Overlay.vbs" & %command%`;
   $('steamline').value = steamLine;
   $('copySteam').onclick = () => {
     // navigator.clipboard can be denied on file:// pages — select+copy always works.

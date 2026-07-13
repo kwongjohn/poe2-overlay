@@ -15,7 +15,10 @@ import * as koffi from 'koffi';
 import { uIOhook, UiohookKey } from 'uiohook-napi';
 import { parseItem, looksLikeItem } from './item-parser';
 
-const ROOT = path.join(__dirname, '..');
+// Packaged: read-only app files live in resources/ (extraResources) and state
+// goes to userData; dev: everything is the project root.
+const ROOT = app.isPackaged ? process.resourcesPath : path.join(__dirname, '..');
+const STATE_DIR = app.isPackaged ? app.getPath('userData') : ROOT;
 const API = 'http://127.0.0.1:4517';
 const BAR_H = 34;
 const MARGIN = 16;
@@ -116,7 +119,10 @@ function wirePreloadDiag(w: BrowserWindow, name: string) {
 // --- companion server --------------------------------------------------------
 function startServer() {
   serverProc = spawn(process.execPath, [path.join(ROOT, 'server', 'index.mjs')], {
-    env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', PORT: '4517' },
+    env: {
+      ...process.env, ELECTRON_RUN_AS_NODE: '1', PORT: '4517',
+      POE2_STATE_DIR: STATE_DIR,
+    },
     stdio: ['ignore', 'inherit', 'inherit'],
   });
   serverProc.on('exit', code => log(`companion server exited (${code})`));
@@ -474,7 +480,9 @@ ipcMain.on('overlay:set', (_e, patch: Partial<OverlaySettings>) => {
 });
 ipcMain.on('overlay:hide', () => setPanel(false));
 ipcMain.on('overlay:openSettings', () => openSettings());
-ipcMain.on('overlay:getRoot', (e) => { e.returnValue = ROOT; });
+ipcMain.on('overlay:getRoot', (e) => {
+  e.returnValue = { root: ROOT, exe: process.execPath, packaged: app.isPackaged };
+});
 ipcMain.on('overlay:settingsSaved', async () => {
   // The settings window PUT everything to the server; re-read and re-apply live.
   await loadCfg();
@@ -561,6 +569,13 @@ app.whenReady().then(async () => {
   setInterval(poll, 500);
   setTimeout(() => void startupNotice(), 4000);
   if (process.env.OPEN_SETTINGS) openSettings(); // debug: exercise the settings preload
+
+  // Auto-update from GitHub Releases (packaged builds only).
+  if (app.isPackaged) {
+    import('electron-updater')
+      .then(({ autoUpdater }) => autoUpdater.checkForUpdatesAndNotify())
+      .catch((e) => log(`auto-update check failed: ${e}`));
+  }
   log(`watching for foreground window matching /${TARGET.source}/i`);
 });
 
