@@ -89,6 +89,15 @@ let everSawGame = false;
 
 function log(msg: string) { console.log(`[overlay] ${msg}`); }
 
+// A broken preload silently kills window.overlay and every button with it —
+// make it loud in the log instead.
+function wirePreloadDiag(w: BrowserWindow, name: string) {
+  w.webContents.on('preload-error', (_e, p, err) => log(`PRELOAD ERROR in ${name} (${p}): ${err}`));
+  w.webContents.on('console-message', (_e, level, msg) => {
+    if (level >= 2) log(`[${name}] ${msg}`);
+  });
+}
+
 // --- companion server --------------------------------------------------------
 function startServer() {
   serverProc = spawn(process.execPath, [path.join(ROOT, 'server', 'index.mjs')], {
@@ -252,6 +261,7 @@ function makePriceWin() {
   });
   priceWin.setAlwaysOnTop(true, 'screen-saver');
   priceWin.setIgnoreMouseEvents(true);
+  wirePreloadDiag(priceWin, 'price-card');
   priceWin.loadFile(path.join(ROOT, 'src', 'price-card.html'));
 }
 
@@ -432,6 +442,7 @@ function openSettings() {
     icon: path.join(ROOT, 'assets', 'icon-256.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js') },
   });
+  wirePreloadDiag(settingsWin, 'settings');
   settingsWin.loadFile(path.join(ROOT, 'src', 'settings.html'));
   settingsWin.on('closed', () => { settingsWin = null; });
 }
@@ -444,6 +455,7 @@ ipcMain.on('overlay:set', (_e, patch: Partial<OverlaySettings>) => {
 });
 ipcMain.on('overlay:hide', () => setPanel(false));
 ipcMain.on('overlay:openSettings', () => openSettings());
+ipcMain.on('overlay:getRoot', (e) => { e.returnValue = ROOT; });
 ipcMain.on('overlay:settingsSaved', async () => {
   // The settings window PUT everything to the server; re-read and re-apply live.
   await loadCfg();
@@ -478,6 +490,7 @@ app.whenReady().then(async () => {
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setMenu(null);
   ownHwnd = win.getNativeWindowHandle().readBigUInt64LE(0);
+  wirePreloadDiag(win, 'chrome-bar');
   await win.loadFile(path.join(ROOT, 'src', 'chrome.html'));
 
   makePriceWin();
@@ -527,6 +540,7 @@ app.whenReady().then(async () => {
   startHotkeys();
   setInterval(poll, 500);
   setTimeout(() => void startupNotice(), 4000);
+  if (process.env.OPEN_SETTINGS) openSettings(); // debug: exercise the settings preload
   log(`watching for foreground window matching /${TARGET.source}/i`);
 });
 

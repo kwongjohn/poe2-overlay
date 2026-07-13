@@ -1,0 +1,28 @@
+Item Class: Waystones
+Rarity: Rare
+Ancient Intent
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +28% (augmented)
+Pack Size: +18% (augmented)
+Monster Effectiveness: +28% (augmented)
+Waystone Drop Chance: +105% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 10(10-15)% increased Attack, Cast and Movement Speed
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 239(200-240)% increased Critical Hit Chance
+Monsters have +23(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Impacting" (Tier: 1) }
+Monsters have 100(90-100)% increased Stun Buildup
+{ Suffix Modifier "Flaming" (Tier: 1) }
+Area has patches of Ignited Ground
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 20(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "of Smothering" (Tier: 1) }
+Players have 36(40-36)% less Recovery Rate of Life and Energy Shield
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

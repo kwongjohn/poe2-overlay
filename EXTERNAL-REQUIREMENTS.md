@@ -12,8 +12,8 @@ Order = the order you'll actually need them (roadmap phases in parentheses)._
 character API (gear + allocated passives + skills) — the clean long-term "current
 character" source. The tracker's OAuth flow is already built; only this ID is missing.
 
-**Status:** per `poe2-build-tracker/HANDOFF.md` an email was sent (~2026-07-04) and is
-awaiting reply. **[verify with John it actually went out]**
+**Status:** email confirmed sent (~2026-07-04; John confirmed 2026-07-12). No reply
+yet — send the follow-up draft ~2026-07-25.
 
 **Steps:**
 1. If not yet sent — or since the plan changed to a **publicly distributed** app —
@@ -262,7 +262,7 @@ that regenerates it each patch.
 
 | # | Requirement | Action needed | Blocking phase | Owner |
 |---|---|---|---|---|
-| 1 | GGG OAuth client_id | Confirm sent / send updated draft; wait | none (parallel) | John (send), GGG (grant) |
+| 1 | GGG OAuth client_id | Sent; no reply as of 2026-07-12 — follow up ~Jul 25 | none (parallel) | GGG (grant) |
 | 2 | Trade API + POESESSID | Cookie copy at Phase 3; build governor | 3 | Claude builds, John supplies cookie |
 | 3 | poe2scout | Verify swagger endpoints; fixtures | 3 | Claude |
 | 4 | poe.ninja | Discover endpoints via network tab | 3 | Claude |

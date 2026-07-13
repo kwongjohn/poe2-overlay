@@ -1,5 +1,8 @@
+// NOTE: preloads run SANDBOXED (Electron 20+ default) — no require('path'), no
+// __dirname; either one throws/undefines and kills the whole bridge, and with
+// it every button in every window (bug found + diagnosed 2026-07-12; see
+// wirePreloadDiag in main.ts). Anything environmental comes from main via IPC.
 import { contextBridge, ipcRenderer } from 'electron';
-import * as path from 'path';
 
 contextBridge.exposeInMainWorld('overlay', {
   onStatus: (cb: (data: unknown) => void) =>
@@ -12,7 +15,7 @@ contextBridge.exposeInMainWorld('overlay', {
     ipcRenderer.on('notice', (_e, data) => cb(data)),
   onPin: (cb: (data: unknown) => void) =>
     ipcRenderer.on('pin', (_e, data) => cb(data)),
-  rootPath: path.resolve(__dirname, '..'),
+  rootPath: ipcRenderer.sendSync('overlay:getRoot'),
   set: (patch: Record<string, unknown>) => ipcRenderer.send('overlay:set', patch),
   hide: () => ipcRenderer.send('overlay:hide'),
   openSettings: () => ipcRenderer.send('overlay:openSettings'),

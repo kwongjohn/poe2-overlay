@@ -4,6 +4,22 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-12 (late night) — Hotfix: every button dead (sandboxed preload)
+
+### Fixed
+- **All UI buttons/controls stopped working** after polish round 2: the preload
+  gained `require('path')` + `__dirname`, but Electron sandboxes preload scripts
+  (20+ default) — neither exists there, the bridge threw, `window.overlay` was
+  undefined, and every page script aborted on first use (bar controls, settings
+  form, price/recs/notice cards). Preload now gets the root path from main via
+  sync IPC and touches nothing environmental.
+- **Preload diagnostics added permanently**: `preload-error` and renderer
+  console errors are mirrored into the main log per window (`wirePreloadDiag`),
+  so this failure class is loud instead of silent. `OPEN_SETTINGS=1` env var
+  exercises the settings window headlessly for testing.
+- Steam-line **Copy** button switched from `navigator.clipboard` (deniable on
+  `file://` pages) to select+`execCommand` with "Copied ✓" feedback.
+
 ## 2026-07-12 (night) — Polish round 2 (all 10 John-approved items)
 
 ### Added

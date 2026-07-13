@@ -1,0 +1,28 @@
+Item Class: Waystones
+Rarity: Rare
+Lost Choice
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +37% (augmented)
+Pack Size: +17% (augmented)
+Monster Rarity: +23% (augmented)
+Waystone Drop Chance: +90% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 209(200-240)% increased Critical Hit Chance
+Monsters have +22(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Tough" (Tier: 1) }
+22(20-25)% more Monster Life
+{ Prefix Modifier "Thunderous" (Tier: 1) }
+Monsters deal 16(15-19)% of Damage as Extra Lightning
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 19(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "Sleet" (Tier: 1) }
+Area has patches of Chilled Ground
+{ Suffix Modifier "of Fatigue" (Tier: 1) }
+Players have 28(30-25)% less Cooldown Recovery Rate
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

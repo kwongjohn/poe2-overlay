@@ -9,30 +9,26 @@ comparison, live market/price checking, and real-time personalized recommendatio
 companion server and React UI are **reused, not rewritten** — this project adds the
 Electron overlay shell, the market/pricing module, and the clipboard/OCR capture layer.
 
-**State (2026-07-10): Phases 0–3a done and John-verified in-game.** Working now:
-overlay shell attached to the game (hotkey panel hosting the full tracker UI, settings
-bar, tray), Ctrl+C capture → parser → corpus/loot-log/registry, and the price card
-(poe2scout 24h avg, league auto-detect, cached + dual-base failover). Rare/magic pricing
-works via the trade2 API (stat-filtered search, governor, POESESSID in settings).
-Public repo: github.com/kwongjohn/poe2-overlay — commit + update CHANGELOG.md every
-session. **Pick advisor done (2026-07-10 evening):** waystones/tablets score against the target
-build (auto-derived archetype tags, per-archetype mod rules, GOOD/CAUTION/RISKY/SKIP +
-rewards) — verified RISKY on a real T14 with curse-gutting + recovery-crippling mods.
-Session HUD (top-center strip, tray-toggleable) and **Recommendations v2** done
-2026-07-12: `Ctrl+Alt+U` → priced target-gear shopping list (poe2scout + relaxed trade
-search, ✓ owned from captures, background-refreshed every 15 min). Rune/OCR module
-deferred (RuneshapePriceChecker covers runes this league). Settings window done 2026-07-12 (tray → Settings… / ⚙: rebindable hotkeys, overlay/
-game/account/advisor options, live apply; single-instance lock).
-**Polish round 2 complete (2026-07-12 night, all 10 items)** — see CHANGELOG.md;
-daily launch is now the silent `PoE2 Overlay.vbs`; user docs in `USAGE.md`.
-**Next: Phase 6** — electron-builder NSIS installer + portable exe, auto-update via
-GitHub Releases (`assets/icon.ico` ready), first-run wizard polish. After that:
-screenshots for USAGE.md (John), leveling hints (next league), OCR (deferred).
-Still pending: GGG OAuth reply (follow up ~Jul 25). Launch: `Start PoE2 Overlay.cmd` · tests: `npm test` · full history:
-`CHANGELOG.md` (update it every session) · roadmap/boundary: `PLAN.md` (§4b) ·
-external deps: `EXTERNAL-REQUIREMENTS.md` · secrets: `CREDENTIALS.local.md`
-(gitignored). Known constraints: don't run the old tracker's server simultaneously
-(port 4517); game must be windowed-fullscreen; overlay elevation must match the game's.
+**State (2026-07-12): Phases 0–5 plus two polish rounds done and John-verified
+in-game; next is Phase 6** (electron-builder NSIS installer + portable exe,
+auto-update via GitHub Releases — `assets/icon.ico` ready), then USAGE screenshots
+(John), leveling hints (next league), OCR (deferred, like the rune module —
+RuneshapePriceChecker covers runes this league). Working today: overlay shell
+(hotkey panel hosting the full tracker UI, settings window, tray, session HUD),
+Ctrl+C item capture → price card (poe2scout + trade2 API), build-aware
+waystone/tablet pick advisor, and the priced upgrade shopping list (`Ctrl+Alt+U`).
+Still pending: GGG OAuth reply (no response as of 2026-07-12; follow up ~Jul 25).
+Session-by-session history lives in `CHANGELOG.md`.
+
+Daily launch: `PoE2 Overlay.vbs` (silent) · first run: `Start PoE2 Overlay.cmd` ·
+tests: `npm test` · user guide: `USAGE.md` · history: `CHANGELOG.md` (update every
+session) · roadmap/boundary: `PLAN.md` (§4b) · external deps:
+`EXTERNAL-REQUIREMENTS.md` · secrets: `CREDENTIALS.local.md` (gitignored).
+Public repo: github.com/kwongjohn/poe2-overlay — commit every session.
+Known constraints: don't run the old tracker's server simultaneously (port 4517);
+game must be windowed-fullscreen; overlay elevation must match the game's.
+Project classification (2026-07-12, `audit/DECISIONS.md`): leisure, portfolio-usable;
+no `audit/PROGRESS.md` logging required.
 
 ## Requirements & compliance
 
@@ -48,7 +44,5 @@ external deps: `EXTERNAL-REQUIREMENTS.md` · secrets: `CREDENTIALS.local.md`
   git-ignored `settings.json`, sent only to `pathofexile.com`, and never logged.
 - Data sources: [poe2scout](https://poe2scout.com) (prices), official trade site APIs.
   Game data and art © Grinding Gear Games.
-
-*(Folder name `poe2-overlay` is a placeholder — rename freely.)*
 
 Unofficial fan tool. Not affiliated with or endorsed by Grinding Gear Games.

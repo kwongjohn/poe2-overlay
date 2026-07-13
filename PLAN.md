@@ -196,19 +196,21 @@ between them. Durations are estimates to validate, not promises.
   are a **manual in-game protocol** John runs each phase: windowed-fullscreen + windowed,
   multi-monitor, DPI scaling (his display **[verify setup]**), alt-tab behavior, game
   patch day.
-- **Session convention:** per workspace rules, every session ends with a shipped
-  artifact and a line in `audit/PROGRESS.md` if this becomes a tracked project
-  **[verify — is this leisure or portfolio?]**.
+- **Session convention:** decided 2026-07-12 (`audit/DECISIONS.md`) — this is a
+  leisure project that doubles as portfolio evidence, not a revenue project: no
+  `audit/PROGRESS.md` logging required. Every session still ends with a shipped
+  artifact and a `CHANGELOG.md` entry; significant choices go to `audit/DECISIONS.md`.
 
 ## 9. Decisions (answered by John, 2026-07-09) & remaining opens
 
 1. **Repo shape: DECIDED** — monorepo vendoring the tracker's `app/`+`server/`.
-2. **Name:** still open; `poe2-overlay` remains the placeholder.
+2. **Name: DECIDED** — `poe2-overlay`, matching the public repo
+   (github.com/kwongjohn/poe2-overlay).
 3. **Audience: DECIDED** — public GitHub release. Setup steps and required notices in
    `EXTERNAL-REQUIREMENTS.md` §9.
 4. **Fullscreen mode: CONFIRMED** — John plays windowed-fullscreen; overlay is viable.
-5. **OAuth status:** still open — confirm the registration email actually went out;
-   updated draft (public-distribution wording) in `EXTERNAL-REQUIREMENTS.md` §1.
+5. **OAuth status:** email confirmed sent (John, 2026-07-12); no reply yet —
+   follow up ~2026-07-25 per `EXTERNAL-REQUIREMENTS.md` §1.
 6. **Hotkeys / v1 panel priority:** still open; defaults in the plan until John says
    otherwise.
 

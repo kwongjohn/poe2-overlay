@@ -97,7 +97,13 @@
 
   const steamLine = `cmd /c start "" wscript.exe "${window.overlay.rootPath}\\PoE2 Overlay.vbs" & %command%`;
   $('steamline').value = steamLine;
-  $('copySteam').onclick = () => navigator.clipboard.writeText(steamLine);
+  $('copySteam').onclick = () => {
+    // navigator.clipboard can be denied on file:// pages — select+copy always works.
+    $('steamline').select();
+    document.execCommand('copy');
+    $('copySteam').textContent = 'Copied ✓';
+    setTimeout(() => $('copySteam').textContent = 'Copy', 1500);
+  };
 
   let current = {};
   fetch(`${API}/api/settings`).then(r => r.json()).then(s => {
