@@ -4,6 +4,23 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-16 (later) — Run close moved to next-map-load (John's request)
+
+### Changed
+- **A run now closes when the NEXT map loads** instead of 90 s after reaching
+  the hideout — so loot-dump captures in the hideout still attribute to the
+  run you just finished. Safety nets: 30-min idle close (`POE2_RUN_IDLE_MS`)
+  and a flush on overlay quit (`POST /api/runs/close`, called from
+  `before-quit`).
+- `Ctrl+Alt+M` now shows the **run in progress** (live duration) when you're
+  mid-map; the last closed run otherwise.
+
+### Fixed
+- `map-runs.csv` open in Excel (exclusive lock) made the CSV endpoint 500 —
+  the CSV is now generated in memory and served regardless; the file write is
+  best-effort and refreshes once Excel lets go. (Found live: John already had
+  7 real runs logged and the file open.)
+
 ## 2026-07-16 — Map-run tracker (per-run summaries + CSV analytics log)
 
 ### Added

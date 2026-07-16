@@ -422,8 +422,13 @@ async function checkRuns(showLatest = false) {
   try {
     const d = await (await fetch(`${API}/api/runs`)).json();
     const latest = d.runs && d.runs[0];
+    if (showLatest) {
+      // Ctrl+Alt+M: prefer the run in progress, else the last closed one.
+      const show = d.active || latest;
+      if (show) { showRunCard(show); if (latest) lastRunId = latest.id; }
+      return;
+    }
     if (!latest) return;
-    if (showLatest) { showRunCard(latest); lastRunId = latest.id; return; }
     if (!runsPrimed) { runsPrimed = true; lastRunId = latest.id; return; }
     if (latest.id !== lastRunId) {
       lastRunId = latest.id;
@@ -622,5 +627,15 @@ app.whenReady().then(async () => {
   log(`watching for foreground window matching /${TARGET.source}/i`);
 });
 
+let flushingQuit = false;
+app.on('before-quit', (e) => {
+  if (flushingQuit) return;
+  e.preventDefault();
+  flushingQuit = true;
+  // Flush any open map run to the log before the server dies with us.
+  fetch(`${API}/api/runs/close`, { method: 'POST' })
+    .catch(() => { /* server already gone */ })
+    .finally(() => app.quit());
+});
 app.on('will-quit', () => { uIOhook.stop(); serverProc?.kill(); });
 app.on('window-all-closed', () => app.quit());

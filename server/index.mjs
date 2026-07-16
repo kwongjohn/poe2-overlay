@@ -1302,7 +1302,9 @@ async function computeRecommendations() {
 const RUNS_LOG = path.join(ROOT, 'map-runs.jsonl');
 const RUNS_CSV = path.join(ROOT, 'map-runs.csv');
 const RUNS_ANNOT = path.join(ROOT, '.run-annotations.json');
-const RUN_GRACE_MS = Number(process.env.POE2_RUN_GRACE_MS || 90 * 1000);
+// A run closes when the NEXT map loads (so post-map hideout loot captures still
+// attribute to it — John's request 2026-07-16), with an idle-timeout safety net.
+const RUN_IDLE_MS = Number(process.env.POE2_RUN_IDLE_MS || 30 * 60 * 1000);
 
 const runState = { active: null, pendingWaystone: null, pendingTablets: [], graceTimer: null };
 const isMapArea = (a) => /^Map/i.test(a || '');
@@ -1331,11 +1333,12 @@ function trackRunEvent(event, d) {
         console.log(`[runs] started: ${d.area} L${d.areaLevel} seed=${d.seed}`);
       }
     } else if (r) {
-      // Left the map (hideout/town): pause; close if not back within grace.
+      // Left the map (hideout/town): pause the clock. The run stays open for
+      // loot-dump captures and closes at the next map load — the idle timer
+      // only catches "stopped playing" so a stale run can't absorb tomorrow's.
       if (r.visitStart) { r.durationMs += now - r.visitStart; r.visitStart = null; }
-      if (!runState.graceTimer) {
-        runState.graceTimer = setTimeout(() => { runState.graceTimer = null; closeRun(Date.now()); }, RUN_GRACE_MS);
-      }
+      if (runState.graceTimer) clearTimeout(runState.graceTimer);
+      runState.graceTimer = setTimeout(() => { runState.graceTimer = null; closeRun(Date.now()); }, RUN_IDLE_MS);
     }
   }
   if (event === 'death' && r) r.deaths += 1;
@@ -1390,6 +1393,9 @@ const csvCell = (v) => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
+// Returns the CSV text; the file write is best-effort because Excel holds an
+// exclusive lock while John has the file open (EBUSY) — the data is never
+// lost (jsonl is the source of truth) and the file refreshes on next rebuild.
 async function rebuildRunsCsv() {
   const cols = ['id', 'start', 'end', 'duration_s', 'map', 'area_level', 'seed', 'character',
     'level_start', 'level_end', 'level_ups', 'deaths', 'visits',
@@ -1410,7 +1416,13 @@ async function rebuildRunsCsv() {
       r.valueEx ?? '', r.xpEarned ?? '', r.essences ?? '', r.rareKills ?? '', r.notes ?? '',
     ].map(csvCell).join(','));
   }
-  await fsp.writeFile(RUNS_CSV, `${lines.join('\n')}\n`);
+  const csv = `${lines.join('\n')}\n`;
+  try {
+    await fsp.writeFile(RUNS_CSV, csv);
+  } catch (e) {
+    console.log(`[runs] map-runs.csv not writable (${e.code === 'EBUSY' ? 'open in Excel?' : e.message}) — will refresh on next run`);
+  }
+  return csv;
 }
 
 // Pick advisor: score a captured waystone/tablet against the *target build*,
@@ -1583,13 +1595,24 @@ const server = http.createServer(async (req, res) => {
     // Map-run history + CSV export + manual annotations.
     if (req.method === 'GET' && p === '/api/runs') {
       const runs = loadRuns().slice(-100).reverse();
-      return send(res, 200, { active: runState.active, pendingWaystone: runState.pendingWaystone, runs });
+      let active = null;
+      if (runState.active) {
+        active = { ...runState.active, inProgress: true };
+        if (active.visitStart) active.durationMs += Date.now() - active.visitStart;
+        delete active.visitStart;
+      }
+      return send(res, 200, { active, pendingWaystone: runState.pendingWaystone, runs });
+    }
+    // Flush the open run (called by the overlay on quit so it isn't lost).
+    if (req.method === 'POST' && p === '/api/runs/close') {
+      const had = !!runState.active;
+      closeRun(Date.now());
+      return send(res, 200, { ok: true, closed: had });
     }
     if (req.method === 'GET' && p === '/api/runs.csv') {
-      await rebuildRunsCsv();
-      const body = fs.existsSync(RUNS_CSV) ? fs.readFileSync(RUNS_CSV) : 'no runs yet\n';
+      const csv = await rebuildRunsCsv(); // serves even while the file is locked by Excel
       res.writeHead(200, { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="map-runs.csv"' });
-      return res.end(body);
+      return res.end(csv);
     }
     if (req.method === 'POST' && p === '/api/runs/annotate') {
       const body = JSON.parse(await readBody(req));

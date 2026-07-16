@@ -64,7 +64,7 @@
     $('noticecard').style.display = 'block';
     const pretty = a => a ? a.replace(/^Map/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : '?';
     const mins = Math.floor((r.durationMs || 0) / 60000), secs = Math.round(((r.durationMs || 0) % 60000) / 1000);
-    $('noticetitle').textContent = `Map run — ${pretty(r.area)} (T${(r.waystone && r.waystone.tier) || '?'} · L${r.areaLevel})`;
+    $('noticetitle').textContent = `Map run${r.inProgress ? ' (in progress)' : ''} — ${pretty(r.area)} (T${(r.waystone && r.waystone.tier) || '?'} · L${r.areaLevel})`;
     let html = `<div class="find">⏱ ${mins}m${String(secs).padStart(2, '0')}s · `
       + `<span class="${r.deaths ? 'brick' : 'note'}">💀 ${r.deaths}</span>`
       + (r.levelUps ? ` · ▲ L${r.levelStart}→${r.levelEnd}` : '')

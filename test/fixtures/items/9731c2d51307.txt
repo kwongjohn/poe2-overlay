@@ -1,0 +1,30 @@
+Item Class: Waystones
+Rarity: Rare
+Lost Solitude
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +26% (augmented)
+Pack Size: +7% (augmented)
+Monster Rarity: +36% (augmented)
+Monster Effectiveness: +15% (augmented)
+Waystone Drop Chance: +90% (augmented)
+--------
+Item Level: 82
+--------
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+{ Suffix Modifier "of Drought" (Tier: 1) }
+Players gain 31(35-30)% reduced Flask Charges
+{ Suffix Modifier "of Overpowering" (Tier: 1) }
+Monster have 116(100-119)% increased Elemental Ailment Application
+{ Suffix Modifier "of Smothering" (Tier: 1) }
+Players have 36(40-36)% less Recovery Rate of Life and Energy Shield
+{ Suffix Modifier "Flaming" (Tier: 1) }
+Area has patches of Ignited Ground
+{ Suffix Modifier "of Obstruction" (Tier: 1) }
+Monsters take 29(26-30)% reduced Extra Damage from Critical Hits
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+--------
+Corrupted
