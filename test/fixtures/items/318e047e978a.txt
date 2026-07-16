@@ -1,0 +1,23 @@
+Item Class: Gloves
+Rarity: Unique
+Plaguefinger
+Gauze Wraps
+--------
+Quality: +16% (augmented)
+Evasion Rating: 15 (augmented)
+Energy Shield: 10 (augmented)
+--------
+Item Level: 79
+--------
+{ Unique Modifier — Evasion, Energy Shield }
+43(30-50)% increased Evasion and Energy Shield
+{ Unique Modifier — Attack, Speed }
+6(4-6)% increased Attack Speed
+{ Unique Modifier — Elemental, Ailment }
+Cannot inflict Elemental Ailments — Unscalable Value
+{ Unique Modifier }
+All Damage from Hits Contributes to Poison Magnitude — Unscalable Value
+{ Unique Modifier — Ailment }
+29(20-30)% chance to Poison on Hit
+--------
+Ulcers, scabs, and pocks, the third army makes its claim.

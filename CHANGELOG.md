@@ -4,6 +4,28 @@ Convention: one dated section per working session, updated at session end.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com). No releases
 yet; sections are dated (phase in parentheses).
 
+## 2026-07-16 — Map-run tracker (per-run summaries + CSV analytics log)
+
+### Added
+- **Map-run detection** on the Client.txt watcher: a run = one map instance
+  (area+seed); portaling to hideout pauses the clock, same-seed re-entry
+  resumes (visit count), a different map or 90 s grace closes it
+  (`POE2_RUN_GRACE_MS` overridable for tests).
+- **Per-run record**: map/level/seed, in-map duration, visits, deaths,
+  level-ups (level start→end), the waystone used (captured pre-run: name, tier,
+  mods, advisor verdict) + tablets, every item captured during the run,
+  currencies aggregated and **valued in ex** from the price cache.
+- **Logs**: `map-runs.jsonl` (source of truth) + `map-runs.csv` regenerated
+  from it with a stable 25-column schema incl. reserved manual columns
+  (`xp_earned`, `essences`, `rare_kills`, `notes`) — fill via
+  `POST /api/runs/annotate`. `GET /api/runs`, `GET /api/runs.csv`.
+- **End-of-run summary card** pops when a run closes (duration, deaths,
+  levels, currency haul + value, waystone verdict recap); `Ctrl+Alt+M`
+  reopens the latest.
+- Verified end-to-end with a synthetic Client.txt: enter map → level → death →
+  mid-run currency capture (attributed + valued) → hideout → grace close →
+  correct JSONL/CSV row → annotation regeneration.
+
 ## 2026-07-13 — Phase 6 (ship quality: installer, portable exe, auto-update)
 
 ### Added

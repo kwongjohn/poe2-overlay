@@ -1,0 +1,28 @@
+Item Class: Waystones
+Rarity: Rare
+Spectre Carving
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +38% (augmented)
+Pack Size: +9% (augmented)
+Monster Rarity: +37% (augmented)
+Waystone Drop Chance: +85% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 239(200-240)% increased Critical Hit Chance
+Monsters have +24(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Frostbitten" (Tier: 1) }
+Monsters deal 19(15-19)% of Damage as Extra Cold
+{ Prefix Modifier "Shattering" (Tier: 1) }
+Monsters Break Armour equal to 30(25-30)% of Physical Damage dealt
+{ Suffix Modifier "of Overpowering" (Tier: 1) }
+Monster have 101(100-119)% increased Elemental Ailment Application
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 12(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

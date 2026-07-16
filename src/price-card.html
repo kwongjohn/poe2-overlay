@@ -59,6 +59,24 @@
       c.style.borderColor = p ? '#f5d90a' : 'rgba(94,234,212,.3)');
   });
 
+  window.overlay.onRun(r => {
+    ['pricecard', 'recscard'].forEach(id => $(id).style.display = 'none');
+    $('noticecard').style.display = 'block';
+    const pretty = a => a ? a.replace(/^Map/, '').replace(/([a-z])([A-Z])/g, '$1 $2') : '?';
+    const mins = Math.floor((r.durationMs || 0) / 60000), secs = Math.round(((r.durationMs || 0) % 60000) / 1000);
+    $('noticetitle').textContent = `Map run — ${pretty(r.area)} (T${(r.waystone && r.waystone.tier) || '?'} · L${r.areaLevel})`;
+    let html = `<div class="find">⏱ ${mins}m${String(secs).padStart(2, '0')}s · `
+      + `<span class="${r.deaths ? 'brick' : 'note'}">💀 ${r.deaths}</span>`
+      + (r.levelUps ? ` · ▲ L${r.levelStart}→${r.levelEnd}` : '')
+      + ` · ${(r.items || []).length} item(s) captured</div>`;
+    const cur = Object.entries(r.currencies || {});
+    for (const [n, q] of cur.slice(0, 5)) html += `<div class="find note">• ${esc(n)} × ${q}</div>`;
+    if (r.valueEx > 0) html += `<div class="find" style="color:#5eead4">captured value ≈ ${r.valueEx} ex</div>`;
+    if (r.waystone && r.waystone.verdict) html += `<div class="find note">waystone verdict was ${esc(r.waystone.verdict)}</div>`;
+    html += `<div class="find note" style="font-size:10px">logged to map-runs.csv · Ctrl+Alt+M reopens · Ctrl+C drops during runs to log them</div>`;
+    $('noticelines').innerHTML = html;
+  });
+
   window.overlay.onRecs(d => {
     $('pricecard').style.display = 'none';
     $('noticecard').style.display = 'none';

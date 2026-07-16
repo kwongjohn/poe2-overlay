@@ -1,0 +1,28 @@
+Item Class: Waystones
+Rarity: Rare
+Dread Course
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +25% (augmented)
+Pack Size: +24% (augmented)
+Monster Rarity: +19% (augmented)
+Waystone Drop Chance: +95% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 13(10-15)% increased Attack, Cast and Movement Speed
+{ Prefix Modifier "Shattering" (Tier: 1) }
+Monsters Break Armour equal to 26(25-30)% of Physical Damage dealt
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 229(200-240)% increased Critical Hit Chance
+Monsters have +21(21-25)% Critical Damage Bonus
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 13(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "of Fatigue" (Tier: 1) }
+Players have 27(30-25)% less Cooldown Recovery Rate
+{ Suffix Modifier "of Evasion" (Tier: 1) }
+Monsters are Evasive
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

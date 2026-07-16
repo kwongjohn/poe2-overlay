@@ -1,0 +1,29 @@
+Item Class: Waystones
+Rarity: Rare
+Death Gambit
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +28% (augmented)
+Pack Size: +10% (augmented)
+Monster Rarity: +42% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +95% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Shattering" (Tier: 1) }
+Monsters Break Armour equal to 26(25-30)% of Physical Damage dealt
+{ Prefix Modifier "Penetrating" (Tier: 1) }
+Monster Damage Penetrates 13(12-14)% Elemental Resistances
+{ Prefix Modifier "Tough" (Tier: 1) }
+22(20-25)% more Monster Life
+{ Suffix Modifier "of Fatigue" (Tier: 1) }
+Players have 28(30-25)% less Cooldown Recovery Rate
+{ Suffix Modifier "of Exposure" (Tier: 1) }
+-7(-8--6)% maximum Player Resistances
+{ Suffix Modifier "of the Unwavering" (Tier: 1) }
+Monsters have 72(70-79)% increased Ailment Threshold
+Monsters have 67(60-69)% increased Stun Threshold
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

@@ -1,0 +1,29 @@
+Item Class: Waystones
+Rarity: Rare
+Ancestral Solitude
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +11% (augmented)
+Pack Size: +24% (augmented)
+Monster Rarity: +18% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +100% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Impacting" (Tier: 1) }
+Monsters have 93(90-100)% increased Stun Buildup
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 239(200-240)% increased Critical Hit Chance
+Monsters have +25(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 12(10-15)% increased Attack, Cast and Movement Speed
+{ Suffix Modifier "of Overpowering" (Tier: 1) }
+Monster have 111(100-119)% increased Elemental Ailment Application
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+{ Suffix Modifier "of Evasion" (Tier: 1) }
+Monsters are Evasive
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

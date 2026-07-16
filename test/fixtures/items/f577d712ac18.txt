@@ -1,0 +1,27 @@
+Item Class: Waystones
+Rarity: Rare
+Cruel Navigation
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Pack Size: +29% (augmented)
+Monster Effectiveness: +15% (augmented)
+Waystone Drop Chance: +85% (augmented)
+--------
+Item Level: 79
+--------
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 216(200-240)% increased Critical Hit Chance
+Monsters have +24(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Infernal" (Tier: 1) }
+Monsters deal 18(15-19)% of Damage as Extra Fire
+{ Prefix Modifier "Precise" (Tier: 1) }
+Monsters have 33(30-40)% increased Accuracy Rating
+{ Suffix Modifier "of Evasion" (Tier: 1) }
+Monsters are Evasive
+{ Suffix Modifier "of Drought" (Tier: 1) }
+Players gain 33(35-30)% reduced Flask Charges
+{ Suffix Modifier "Flaming" (Tier: 1) }
+Area has patches of Ignited Ground
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

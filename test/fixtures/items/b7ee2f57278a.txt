@@ -1,0 +1,27 @@
+Item Class: Waystones
+Rarity: Rare
+Tranquil Panorama
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +56% (augmented)
+Pack Size: +7% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +95% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Frostbitten" (Tier: 1) }
+Monsters deal 17(15-19)% of Damage as Extra Cold
+{ Prefix Modifier "Profane" (Tier: 1) }
+Monsters deal 17(15-19)% of Damage as Extra Chaos
+{ Prefix Modifier "Impacting" (Tier: 1) }
+Monsters have 90(90-100)% increased Stun Buildup
+{ Suffix Modifier "of Drought" (Tier: 1) }
+Players gain 33(35-30)% reduced Flask Charges
+{ Suffix Modifier "of Fatigue" (Tier: 1) }
+Players have 28(30-25)% less Cooldown Recovery Rate
+{ Suffix Modifier "of Smothering" (Tier: 1) }
+Players have 36(40-36)% less Recovery Rate of Life and Energy Shield
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

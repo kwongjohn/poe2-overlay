@@ -1,0 +1,28 @@
+Item Class: Waystones
+Rarity: Rare
+Bleak Direction
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +10% (augmented)
+Pack Size: +7% (augmented)
+Monster Rarity: +66% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +80% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Tough" (Tier: 1) }
+22(20-25)% more Monster Life
+{ Prefix Modifier "Painful" (Tier: 1) }
+16(15-19)% increased Monster Damage
+{ Prefix Modifier "Puncturing" (Tier: 1) }
+Monsters have 18(15-20)% chance to inflict Bleeding on Hit
+{ Suffix Modifier "of Obstruction" (Tier: 1) }
+Monsters take 27(26-30)% reduced Extra Damage from Critical Hits
+{ Suffix Modifier "of Hexwarding" (Tier: 1) }
+46(50-40)% less effect of Curses on Monsters
+{ Suffix Modifier "Shocking" (Tier: 1) }
+Area has patches of Shocked Ground — Unscalable Value
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

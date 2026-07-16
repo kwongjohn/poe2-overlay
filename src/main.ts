@@ -393,6 +393,46 @@ async function showRecs() {
   priceTimer = setTimeout(() => priceWin?.hide(), 12000);
 }
 
+// --- map-run summary card --------------------------------------------------------
+let lastRunId: string | null = null;
+let runsPrimed = false; // first poll just records the latest id, no card
+
+function showRunCard(run: { items?: unknown[]; currencies?: Record<string, number> }) {
+  if (!priceWin) return;
+  if (priceWin.webContents.isLoading()) {
+    priceWin.webContents.once('did-finish-load', () => showRunCard(run));
+    return;
+  }
+  const rows = 4 + Math.min(Object.keys(run.currencies || {}).length, 5);
+  priceWin.setSize(380, Math.min(110 + rows * 17, 300));
+  priceWin.webContents.send('run', run);
+  const cur = screen.getCursorScreenPoint();
+  const wa = screen.getDisplayNearestPoint(cur).workArea;
+  const [w, h] = priceWin.getSize();
+  priceWin.setPosition(
+    Math.min(cur.x + 24, wa.x + wa.width - w - 8),
+    Math.min(cur.y + 24, wa.y + wa.height - h - 8),
+  );
+  priceWin.showInactive();
+  if (priceTimer) clearTimeout(priceTimer);
+  priceTimer = setTimeout(() => priceWin?.hide(), 20000);
+}
+
+async function checkRuns(showLatest = false) {
+  try {
+    const d = await (await fetch(`${API}/api/runs`)).json();
+    const latest = d.runs && d.runs[0];
+    if (!latest) return;
+    if (showLatest) { showRunCard(latest); lastRunId = latest.id; return; }
+    if (!runsPrimed) { runsPrimed = true; lastRunId = latest.id; return; }
+    if (latest.id !== lastRunId) {
+      lastRunId = latest.id;
+      log(`map run closed: ${latest.area} — showing summary`);
+      showRunCard(latest);
+    }
+  } catch { /* server busy/down; next tick */ }
+}
+
 // --- clipboard capture (user-pressed Ctrl+C only) ------------------------------
 function captureClipboard() {
   setTimeout(async () => {
@@ -441,6 +481,7 @@ function startHotkeys() {
     if (chordMatch(e, parseHotkey(cfg.hotkey))) setPanel(!panelOpen);
     if (chordMatch(e, parseHotkey(cfg.recsHotkey, 'Ctrl+Alt+U'))) void showRecs();
     // Fixed chords: T = open the last trade search in the browser, P = pin the card.
+    if (e.ctrlKey && e.altKey && e.keycode === UiohookKey.M) void checkRuns(true);
     if (e.ctrlKey && e.altKey && e.keycode === UiohookKey.T && lastTradeUrl) {
       log(`opening trade search: ${lastTradeUrl}`);
       void shell.openExternal(lastTradeUrl);
@@ -567,6 +608,8 @@ app.whenReady().then(async () => {
 
   startHotkeys();
   setInterval(poll, 500);
+  setInterval(() => void checkRuns(), 10000);
+  setTimeout(() => void checkRuns(), 5000); // prime without showing
   setTimeout(() => void startupNotice(), 4000);
   if (process.env.OPEN_SETTINGS) openSettings(); // debug: exercise the settings preload
 

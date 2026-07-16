@@ -1,0 +1,10 @@
+Item Class: Stackable Currency
+Rarity: Currency
+Orb of Chance
+--------
+Stack Size: 7/10
+--------
+Unpredictably either upgrades a Normal item to Unique rarity or destroys it
+--------
+Right click this item then left click a normal item to apply it.
+Shift click to unstack.

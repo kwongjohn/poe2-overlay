@@ -1,0 +1,27 @@
+Item Class: Waystones
+Rarity: Rare
+Twisted Path
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +13% (augmented)
+Pack Size: +31% (augmented)
+Waystone Drop Chance: +100% (augmented)
+--------
+Item Level: 80
+--------
+{ Prefix Modifier "Fleeting" (Tier: 1) }
+Monsters have 14(10-15)% increased Attack, Cast and Movement Speed
+{ Prefix Modifier "Infernal" (Tier: 1) }
+Monsters deal 18(15-19)% of Damage as Extra Fire
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 206(200-240)% increased Critical Hit Chance
+Monsters have +21(21-25)% Critical Damage Bonus
+{ Suffix Modifier "of Evasion" (Tier: 1) }
+Monsters are Evasive
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 24(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "of Drought" (Tier: 1) }
+Players gain 35(35-30)% reduced Flask Charges
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

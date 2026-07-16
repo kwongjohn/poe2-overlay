@@ -1,0 +1,22 @@
+Item Class: Belts
+Rarity: Rare
+Apocalypse Tether
+Heavy Belt
+--------
+Requires: Level 52
+--------
+Item Level: 81
+--------
+{ Implicit Modifier }
+28(20-30)% increased Stun Threshold
+{ Implicit Modifier — Charm }
+Has 3(1-3) Charm Slots
+--------
+{ Prefix Modifier "Fecund" (Tier: 1) — Life }
++161(150-174) to maximum Life
+{ Prefix Modifier "Edged" (Tier: 2) — Damage, Physical }
+64(64-97) to 126(98-145) Physical Thorns damage
+{ Suffix Modifier "of Stone Skin" (Tier: 8) }
++35(30-49) to Stun Threshold
+{ Suffix Modifier "of the Newt" (Tier: 9) — Life }
+1(1-2) Life Regeneration per second

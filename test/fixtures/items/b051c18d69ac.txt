@@ -1,0 +1,20 @@
+Item Class: Waystones
+Rarity: Rare
+Mystic Carving
+Waystone (Tier 15)
+--------
+Revives Available: 3 (augmented)
+Item Rarity: +26% (augmented)
+Monster Rarity: +19% (augmented)
+Waystone Drop Chance: +40% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Frostbitten" (Tier: 1) }
+Monsters deal 17(15-19)% of Damage as Extra Cold
+{ Prefix Modifier "Shattering" (Tier: 1) }
+Monsters Break Armour equal to 28(25-30)% of Physical Damage dealt
+{ Suffix Modifier "of Fatigue" (Tier: 1) }
+Players have 25(30-25)% less Cooldown Recovery Rate
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

@@ -698,6 +698,7 @@ async function persistEvent(type, at) {
 function emit(event, data) {
   live.updatedAt = Date.now();
   if (data && data.at) void persistEvent(event, data.at);
+  try { trackRunEvent(event, data); } catch (e) { console.log(`[runs] track error: ${e.message}`); }
   broadcast(event, data);
   broadcast('state', live);
 }
@@ -966,6 +967,30 @@ async function ingestItem(raw, parsed) {
   };
   // 2. Loot log with zone context (dashboard analytics later).
   await fsp.appendFile(ITEMS_LOG, `${JSON.stringify(meta)}\n`).catch(() => {});
+
+  // 2b. Map-run attribution: waystones/tablets captured OUTSIDE a map are prep
+  // for the next run; anything captured while a run is open counts as its loot.
+  if (parsed) {
+    const isWs = /waystone/i.test(parsed.itemClass || '');
+    const isTab = /tablet/i.test(parsed.itemClass || '');
+    if ((isWs || isTab) && !isMapArea(live.area)) {
+      if (isWs) {
+        runState.pendingWaystone = {
+          name: parsed.name, base: parsed.baseType,
+          tier: (parsed.properties || {})['Waystone Tier'] || null,
+          mods: parsed.explicits || [], verdict: null,
+        };
+      } else {
+        runState.pendingTablets.push({ name: parsed.name, base: parsed.baseType, mods: parsed.explicits || [] });
+      }
+    } else if (runState.active) {
+      runState.active.items.push({
+        ts: meta.ts, itemClass: parsed.itemClass, rarity: parsed.rarity,
+        name: parsed.name, baseType: parsed.baseType,
+        stack: parsed.stackSize ? parsed.stackSize.cur : 1,
+      });
+    }
+  }
 
   // 3. Current-items registry: newest first, upsert by class+name+base, capped.
   if (parsed) {
@@ -1269,6 +1294,125 @@ async function computeRecommendations() {
   }
 }
 
+// Map-run tracker: a run = one map instance (area+seed), detected from zone
+// events. Portaling to the hideout pauses the clock; returning to the same
+// seed resumes it; a different map or the grace expiry closes the run. Closed
+// runs append to map-runs.jsonl (source of truth) and map-runs.csv is
+// regenerated from it (+ manual annotations) for spreadsheet use.
+const RUNS_LOG = path.join(ROOT, 'map-runs.jsonl');
+const RUNS_CSV = path.join(ROOT, 'map-runs.csv');
+const RUNS_ANNOT = path.join(ROOT, '.run-annotations.json');
+const RUN_GRACE_MS = Number(process.env.POE2_RUN_GRACE_MS || 90 * 1000);
+
+const runState = { active: null, pendingWaystone: null, pendingTablets: [], graceTimer: null };
+const isMapArea = (a) => /^Map/i.test(a || '');
+
+function trackRunEvent(event, d) {
+  const now = d && d.at ? parseLogTs(d.at) : Date.now();
+  const r = runState.active;
+  if (event === 'zone') {
+    if (isMapArea(d.area)) {
+      if (r && r.seed === d.seed && r.area === d.area) {
+        // Portal back into the same instance: resume the clock.
+        if (runState.graceTimer) { clearTimeout(runState.graceTimer); runState.graceTimer = null; }
+        if (!r.visitStart) { r.visitStart = now; r.visits += 1; }
+      } else {
+        if (r) closeRun(now);
+        runState.active = {
+          id: `${now}-${d.seed}`, area: d.area, areaLevel: d.areaLevel, seed: d.seed,
+          character: live.character, levelStart: live.level, levelEnd: live.level,
+          startTs: now, endTs: null, durationMs: 0, visitStart: now, visits: 1,
+          deaths: 0, levelUps: 0,
+          waystone: runState.pendingWaystone, tablets: runState.pendingTablets,
+          items: [],
+        };
+        runState.pendingWaystone = null;
+        runState.pendingTablets = [];
+        console.log(`[runs] started: ${d.area} L${d.areaLevel} seed=${d.seed}`);
+      }
+    } else if (r) {
+      // Left the map (hideout/town): pause; close if not back within grace.
+      if (r.visitStart) { r.durationMs += now - r.visitStart; r.visitStart = null; }
+      if (!runState.graceTimer) {
+        runState.graceTimer = setTimeout(() => { runState.graceTimer = null; closeRun(Date.now()); }, RUN_GRACE_MS);
+      }
+    }
+  }
+  if (event === 'death' && r) r.deaths += 1;
+  if (event === 'level' && r) { r.levelUps += 1; r.levelEnd = d.level; }
+}
+
+function closeRun(now) {
+  const r = runState.active;
+  if (!r) return;
+  if (r.visitStart) { r.durationMs += now - r.visitStart; r.visitStart = null; }
+  r.endTs = now;
+  runState.active = null;
+  if (runState.graceTimer) { clearTimeout(runState.graceTimer); runState.graceTimer = null; }
+  void persistRun(r);
+}
+
+async function persistRun(r) {
+  try {
+    const s = await ensureScout().catch(() => scout);
+    // Aggregate captured currencies and price them from the scout cache.
+    const currencies = {};
+    for (const it of r.items) {
+      if (it.rarity === 'Currency') currencies[it.name] = (currencies[it.name] || 0) + (it.stack || 1);
+    }
+    let valueEx = 0;
+    for (const [name, qty] of Object.entries(currencies)) {
+      const hit = findScoutItem(s, name, '');
+      if (hit && hit.CurrentPrice > 0) valueEx += hit.CurrentPrice * qty;
+    }
+    const rec = { ...r, currencies, valueEx: Math.round(valueEx * 100) / 100 };
+    delete rec.visitStart;
+    await fsp.appendFile(RUNS_LOG, `${JSON.stringify(rec)}\n`);
+    await rebuildRunsCsv();
+    broadcast('run', rec);
+    console.log(`[runs] closed: ${rec.area} L${rec.areaLevel} ${(rec.durationMs / 60000).toFixed(1)}min deaths=${rec.deaths} items=${rec.items.length} value=${rec.valueEx}ex`);
+  } catch (e) { console.log(`[runs] persist failed: ${e.message}`); }
+}
+
+function loadRuns() {
+  let annot = {};
+  try { annot = JSON.parse(fs.readFileSync(RUNS_ANNOT, 'utf8')); } catch { /* none */ }
+  try {
+    return fs.readFileSync(RUNS_LOG, 'utf8').split('\n').filter(Boolean)
+      .map((l) => { try { return JSON.parse(l); } catch { return null; } })
+      .filter(Boolean)
+      .map((r) => ({ ...r, ...(annot[r.id] || {}) }));
+  } catch { return []; }
+}
+
+const csvCell = (v) => {
+  const s = v == null ? '' : String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+async function rebuildRunsCsv() {
+  const cols = ['id', 'start', 'end', 'duration_s', 'map', 'area_level', 'seed', 'character',
+    'level_start', 'level_end', 'level_ups', 'deaths', 'visits',
+    'waystone', 'waystone_tier', 'waystone_verdict', 'waystone_mods', 'tablets',
+    'items_captured', 'currencies', 'value_ex', 'xp_earned', 'essences', 'rare_kills', 'notes'];
+  const lines = [cols.join(',')];
+  for (const r of loadRuns()) {
+    lines.push([
+      r.id, new Date(r.startTs).toISOString(), r.endTs ? new Date(r.endTs).toISOString() : '',
+      Math.round((r.durationMs || 0) / 1000), r.area, r.areaLevel, r.seed, r.character,
+      r.levelStart, r.levelEnd, r.levelUps, r.deaths, r.visits,
+      r.waystone ? r.waystone.name : '', r.waystone ? r.waystone.tier : '',
+      r.waystone ? (r.waystone.verdict || '') : '',
+      r.waystone ? (r.waystone.mods || []).join(' | ') : '',
+      (r.tablets || []).map((t) => t.name).join(' | '),
+      (r.items || []).length,
+      Object.entries(r.currencies || {}).map(([n, q]) => `${n}:${q}`).join('; '),
+      r.valueEx ?? '', r.xpEarned ?? '', r.essences ?? '', r.rareKills ?? '', r.notes ?? '',
+    ].map(csvCell).join(','));
+  }
+  await fsp.writeFile(RUNS_CSV, `${lines.join('\n')}\n`);
+}
+
 // Pick advisor: score a captured waystone/tablet against the *target build*,
 // not just the market. Archetype tags are derived from the build's gem ids and
 // ascendancy (overridable via settings.advisor.tags); mods are matched by a
@@ -1436,6 +1580,31 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, loadCurrentItems());
     }
 
+    // Map-run history + CSV export + manual annotations.
+    if (req.method === 'GET' && p === '/api/runs') {
+      const runs = loadRuns().slice(-100).reverse();
+      return send(res, 200, { active: runState.active, pendingWaystone: runState.pendingWaystone, runs });
+    }
+    if (req.method === 'GET' && p === '/api/runs.csv') {
+      await rebuildRunsCsv();
+      const body = fs.existsSync(RUNS_CSV) ? fs.readFileSync(RUNS_CSV) : 'no runs yet\n';
+      res.writeHead(200, { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="map-runs.csv"' });
+      return res.end(body);
+    }
+    if (req.method === 'POST' && p === '/api/runs/annotate') {
+      const body = JSON.parse(await readBody(req));
+      if (!body.id) return send(res, 400, { error: 'run id required' });
+      let annot = {};
+      try { annot = JSON.parse(fs.readFileSync(RUNS_ANNOT, 'utf8')); } catch { /* none */ }
+      annot[body.id] = { ...annot[body.id] };
+      for (const k of ['xpEarned', 'essences', 'rareKills', 'notes']) {
+        if (body[k] !== undefined) annot[body.id][k] = body[k];
+      }
+      await fsp.writeFile(RUNS_ANNOT, JSON.stringify(annot, null, 2));
+      await rebuildRunsCsv();
+      return send(res, 200, { ok: true });
+    }
+
     // Priced target-gear shopping list (cached; background-refreshed).
     if (req.method === 'GET' && p === '/api/recommendations') {
       if (!recsState.computedAt && !recsState.computing) void computeRecommendations();
@@ -1462,6 +1631,10 @@ const server = http.createServer(async (req, res) => {
         // search (their market value is not the interesting signal).
         const isMapItem = parsed && /waystone|tablet/i.test(parsed.itemClass || '');
         const advice = isMapItem ? adviseMapItem(parsed, await buildAdvisorTags()) : undefined;
+        // Remember the verdict on the waystone queued for the next run.
+        if (advice && runState.pendingWaystone && runState.pendingWaystone.name === parsed.name) {
+          runState.pendingWaystone.verdict = advice.verdict;
+        }
         const hit = findScoutItem(s, name, base);
         // CurrentPrice of 0 means "no data", not "free" — treat as unpriced.
         if (hit && hit.CurrentPrice > 0) {

@@ -1,0 +1,24 @@
+Item Class: Waystones
+Rarity: Rare
+Hate Bind
+Waystone (Tier 15)
+--------
+Revives Available: 2 (augmented)
+Item Rarity: +11% (augmented)
+Pack Size: +9% (augmented)
+Monster Rarity: +44% (augmented)
+Waystone Drop Chance: +60% (augmented)
+--------
+Item Level: 81
+--------
+{ Prefix Modifier "Painful" (Tier: 1) }
+19(15-19)% increased Monster Damage
+{ Prefix Modifier "Shattering" (Tier: 1) }
+Monsters Break Armour equal to 27(25-30)% of Physical Damage dealt
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 200(200-240)% increased Critical Hit Chance
+Monsters have +22(21-25)% Critical Damage Bonus
+{ Suffix Modifier "of Overpowering" (Tier: 1) }
+Monster have 100(100-119)% increased Elemental Ailment Application
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

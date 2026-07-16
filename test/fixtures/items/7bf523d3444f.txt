@@ -1,0 +1,31 @@
+Item Class: Waystones
+Rarity: Rare
+Ghastly Charge
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +25% (augmented)
+Pack Size: +10% (augmented)
+Monster Rarity: +18% (augmented)
+Monster Effectiveness: +28% (augmented)
+Waystone Drop Chance: +90% (augmented)
+--------
+Item Level: 81
+--------
+{ Suffix Modifier "Flaming" (Tier: 1) }
+Area has patches of Ignited Ground
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+{ Suffix Modifier "of Overpowering" (Tier: 1) }
+Monster have 104(100-119)% increased Elemental Ailment Application
+{ Suffix Modifier "of Exposure" (Tier: 1) }
+-8(-8--6)% maximum Player Resistances
+{ Suffix Modifier "of the Prism" (Tier: 1) }
++30(30-34)% Monster Elemental Resistances
+{ Suffix Modifier "of the Unwavering" (Tier: 1) }
+Monsters have 78(70-79)% increased Ailment Threshold
+Monsters have 63(60-69)% increased Stun Threshold
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.
+--------
+Corrupted

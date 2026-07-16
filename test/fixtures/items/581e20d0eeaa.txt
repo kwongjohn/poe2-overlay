@@ -1,0 +1,30 @@
+Item Class: Waystones
+Rarity: Rare
+Unholy Progression
+Waystone (Tier 15)
+--------
+Revives Available: 0 (augmented)
+Item Rarity: +13% (augmented)
+Pack Size: +16% (augmented)
+Monster Rarity: +43% (augmented)
+Monster Effectiveness: +13% (augmented)
+Waystone Drop Chance: +85% (augmented)
+--------
+Item Level: 82
+--------
+{ Prefix Modifier "Destructive" (Tier: 1) }
+Monsters have 231(200-240)% increased Critical Hit Chance
+Monsters have +23(21-25)% Critical Damage Bonus
+{ Prefix Modifier "Venomous" (Tier: 1) }
+Monsters have 33(27-33)% chance to Poison on Hit
+{ Prefix Modifier "Painful" (Tier: 1) }
+15(15-19)% increased Monster Damage
+{ Suffix Modifier "of Buffering" (Tier: 1) }
+Monsters gain 23(12-25)% of maximum Life as Extra maximum Energy Shield
+{ Suffix Modifier "of the Unwavering" (Tier: 1) }
+Monsters have 78(70-79)% increased Ailment Threshold
+Monsters have 65(60-69)% increased Stun Threshold
+{ Suffix Modifier "of Enduring" (Tier: 1) }
+Monsters are Armoured
+--------
+Can be used in a Map Device, allowing you to enter a Map. Waystones can only be used once.

@@ -15,6 +15,8 @@ contextBridge.exposeInMainWorld('overlay', {
     ipcRenderer.on('notice', (_e, data) => cb(data)),
   onPin: (cb: (data: unknown) => void) =>
     ipcRenderer.on('pin', (_e, data) => cb(data)),
+  onRun: (cb: (data: unknown) => void) =>
+    ipcRenderer.on('run', (_e, data) => cb(data)),
   rootPath: ipcRenderer.sendSync('overlay:getRoot'),
   set: (patch: Record<string, unknown>) => ipcRenderer.send('overlay:set', patch),
   hide: () => ipcRenderer.send('overlay:hide'),
